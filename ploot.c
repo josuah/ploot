@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "config.h"
 
-#define MARGIN	9
+#define MAX_VAL	80
+#define MARGIN	7
+#define HEIGHT	20
 
 #define ABS(x)	((x) < 0 ? -(x) : (x))
 #define LEN(x)	(sizeof(x) / sizeof(*x))
@@ -16,18 +19,16 @@
 void
 humanize(char *str, double val)
 {
-	int	exp;
-	char	*label = " kMGTE", fmt[] = "%+.?f%c";
+	int	exp, precision;
+	char	*label = "\0kMGTE";
 
 	for (exp = 0; ABS(val) > 1000; exp++)
 		val /= 1000;
 
-	fmt[3] = (ABS(val) < 10) ? '3' : (ABS(val) < 100) ? '2' : '1';
-	if (exp == 0) {
-		fmt[5] = '\0';
-		fmt[3]++;
-	}
-	snprintf(str, 8, fmt, val, label[exp]);
+	precision = (ABS(val) < 10) ? 3 : (ABS(val) < 100) ? 2 : 1;
+	if (exp == 0)
+		precision++;
+	snprintf(str, 8, "%+.*f%c", precision, val, label[exp]);
 	if (val >= 0)
 		str[0] = ' ';
 }
@@ -70,9 +71,9 @@ vaxis(double val, int pos)
 
 	if (pos % 4 == 0) {
 		humanize(label, val);
-		printf("%s -", label);
+		printf("%*s -", MARGIN, label);
 	} else {
-		printf("         ");
+		printf("%*c  ", MARGIN, ' ');
 	}
 }
 
@@ -82,7 +83,7 @@ vaxis(double val, int pos)
 void
 haxis(int col)
 {
-	printf("%*d -+", MARGIN - 2, 0);
+	printf("%*d -+", MARGIN, 0);
 	while (col-- > 0)
 		putchar('-');
 	putchar('\n');
@@ -125,26 +126,53 @@ plot(int height, double *beg, double *end, char *str)
 	haxis(end - beg);
 }
 
-void
-read_simple()
+/*
+ * Read a simple format with one double per line and save the last `MAX_WIDTH'
+ * values into `buf' which must be at least MAX_VAL wide and return a pointer
+ * to the last element or NULL if the input contains error.
+ */
+double *
+read_simple(double buf[MAX_VAL])
 {
-	;
+	/* ring buffer to read input continuously */
+	double	val_rbuf[MAX_VAL];
+
+	(void)val_rbuf;
+
+	return buf;
+}
+
+/*
+ * Read a format with blank-separated time_t-double pairs, one per line and save
+ * the last `MAX_WIDTH' values into `timev' and `valv' which must both be at
+ * least MAX_VAL wide and return a pointer to the last element or NULL if the
+ * input contains error.
+ */
+double *
+read_time_series(double *valv, time_t *timev)
+{
+	/* ring buffers to read input continuously */
+	time_t	time_rbuf[MAX_VAL];
+	double	val_rbuf[MAX_VAL];
+
+	(void)time_rbuf;
+	(void)val_rbuf;
+	(void)timev;
+
+	return valv;
 }
 
 int
 main()
 {
-	double	val[] = { 1000, 3030, 3000, 2456, 3005, 3000, 1031, 2000, 3345,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    5000, 3444, 1034, 1833, 2452, 2555, 432, 2456, 435, 1646, 435, 346,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    1833, 2452, 1456, 435, 435, 554, 5456, 1034, 2452, 432, 1435, 1646,
-	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
-	    1456, 3498, 834, 834, 804, 234, 544, 3456, 2984, 983, 2583, 2583 };
+	double	val[] = { 55, 55, 1, 72, 53, 73, 6, 45, 7, 71, 18, 100, 78, 56,
+	    53, 24, 99, 99, 37, 91, 67, 68, 9, 16, 83, 30, 68, 51, 38, 47, 91,
+	    35, 73, 36, 52, 99, 19, 91, 89, 7, 40, 88, 75, 50, 92, 91, 23, 54,
+	    90, 98, 91, 94, 10, 39, 55, 71, 44, 77, 48, 74, 66, 53, 81, 85, 44,
+	    71, 84, 93, 8, 50, 77, 16, 57, 68, 52, 82, 36, 7, 13, 10, 7, 95, 64,
+	    71, 61, 12, 29, 63, 85, 72, 98, 59, 96, 91, 67, 24, 48, 4, 90, 1,
+	    15, 57, 11, 93, 18, 18, 78, 85, 36, 35, 15, 7, 85, 31, 73, 57, 70 };
 
-	plot(30, val, val + LEN(val), "Sample data entered by hand");
+	plot(HEIGHT, val, val + LEN(val), "Sample data generated with jot");
 	return 0;
 }
