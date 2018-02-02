@@ -56,7 +56,7 @@ title(char *str, int width)
 {
 	if (str == NULL)
 		return;
-	printf("%*s\n\n", (int)(width - strlen(str)) / 2 + MARGIN, str);
+	printf("%*s\n\n", (int)(width + strlen(str) + MARGIN) / 2, str);
 }
 
 /*
@@ -145,6 +145,6 @@ main()
 	    1000, 1833, 2452, 432, 1456, 435, 1646, 435, 1345, 554, 5245, 3456,
 	    1456, 3498, 834, 834, 804, 234, 544, 3456, 2984, 983, 2583, 2583 };
 
-	plot(30, val, val + LEN(val), "title");
+	plot(30, val, val + LEN(val), "Sample data entered by hand");
 	return 0;
 }
