@@ -10,8 +10,9 @@
 #define MAX_VAL	80
 #define MARGIN	7
 
-#define ABS(x)	((x) < 0 ? -(x) : (x))
-#define LEN(x)	(sizeof(x) / sizeof(*x))
+#define ABS(x)		((x) < 0 ? -(x) : (x))
+#define MIN(x, y)	((x) < (y) ? (x) : (y))
+#define LEN(x)		(sizeof(x) / sizeof(*x))
 
 char	*argv0;
 int	flag_h = 20;
@@ -132,6 +133,29 @@ plot(int height, double *beg, double *end, char *str)
 }
 
 /*
+ * Add `val' at the current position `pos' of the `ring' buffer and return the
+ * next postion.
+ */
+size_t
+ring_add(double *ring, size_t len, size_t pos, double val)
+{
+	*ring = val;
+
+	return (pos >= len) ? pos + 1 : 0;
+}
+
+/*
+ * Copy the ring buffer `rbuf' content with current position `pos' into the
+ * buffer `buf'.  Both buffer of length `len'.
+ */
+void
+ring_copy(double *buf, double *rbuf, size_t len, size_t pos)
+{
+	memcpy(buf, rbuf + pos, (len - pos) * sizeof(*rbuf));
+	memcpy(buf + (len - pos), rbuf, pos * sizeof(*rbuf));
+}
+
+/*
  * Read a simple format with one double per line and save the last `MAX_WIDTH'
  * values into `buf' which must be at least MAX_VAL wide and return a pointer
  * to the last element or NULL if the input contains error.
@@ -139,12 +163,16 @@ plot(int height, double *beg, double *end, char *str)
 double *
 read_simple(double buf[MAX_VAL])
 {
-	/* ring buffer to read input continuously */
-	double	val_rbuf[MAX_VAL];
+	/* ring buffer to keep the last `MAX_VAL' values */
+	double	rbuf[MAX_VAL], val;
+	size_t	p, pos, len;
 
-	(void)val_rbuf;
+	len = LEN(rbuf);
+	for (p = pos = 0; scanf("%lf\n", &val) > 0; p++)
+		pos = ring_add(rbuf, val, len, pos);
+	ring_copy(buf, rbuf, len, pos);
 
-	return buf;
+	return buf + MIN(p, len);
 }
 
 /*
@@ -156,7 +184,7 @@ read_simple(double buf[MAX_VAL])
 double *
 read_time_series(double *valv, time_t *timev)
 {
-	/* ring buffers to read input continuously */
+	/* ring buffer to keep the last `MAX_VAL' values */
 	time_t	time_rbuf[MAX_VAL];
 	double	val_rbuf[MAX_VAL];
 
@@ -177,13 +205,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	double	val[] = { 55, 55, 1, 72, 53, 73, 6, 45, 7, 71, 18, 100, 78, 56,
-	    53, 24, 99, 99, 37, 91, 67, 68, 9, 16, 83, 30, 68, 51, 38, 47, 91,
-	    35, 73, 36, 52, 99, 19, 91, 89, 7, 40, 88, 75, 50, 92, 91, 23, 54,
-	    90, 98, 91, 94, 10, 39, 55, 71, 44, 77, 48, 74, 66, 53, 81, 85, 44,
-	    71, 84, 93, 8, 50, 77, 16, 57, 68, 52, 82, 36, 7, 13, 10, 7, 95, 64,
-	    71, 61, 12, 29, 63, 85, 72, 98, 59, 96, 91, 67, 24, 48, 4, 90, 1,
-	    15, 57, 11, 93, 18, 18, 78, 85, 36, 35, 15, 7, 85, 31, 73, 57, 70 };
+	double	val[MAX_VAL], *end;
 
 	ARGBEGIN(argc, argv) {
 	case 'h':
@@ -193,6 +215,7 @@ main(int argc, char **argv)
 		break;
 	} ARGEND;
 
-	plot(flag_h, val, val + LEN(val), "Sample data generated with jot");
+	end = read_simple(val);
+	plot(flag_h, val, end, "Sample data generated with jot");
 	return 0;
 }
