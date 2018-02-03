@@ -1,15 +1,20 @@
-#include <stdio.h>
-#include <string.h>
 #include <sys/time.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "arg.h"
 #include "config.h"
 
 #define MAX_VAL	80
 #define MARGIN	7
-#define HEIGHT	20
 
 #define ABS(x)	((x) < 0 ? -(x) : (x))
 #define LEN(x)	(sizeof(x) / sizeof(*x))
+
+char	*argv0;
+int	flag_h = 20;
 
 /*
  * Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
@@ -162,8 +167,15 @@ read_time_series(double *valv, time_t *timev)
 	return valv;
 }
 
+void
+usage(void)
+{
+	printf("usage: %s [-h height]\n", argv0);
+	exit(1);
+}
+
 int
-main()
+main(int argc, char **argv)
 {
 	double	val[] = { 55, 55, 1, 72, 53, 73, 6, 45, 7, 71, 18, 100, 78, 56,
 	    53, 24, 99, 99, 37, 91, 67, 68, 9, 16, 83, 30, 68, 51, 38, 47, 91,
@@ -173,6 +185,14 @@ main()
 	    71, 61, 12, 29, 63, 85, 72, 98, 59, 96, 91, 67, 24, 48, 4, 90, 1,
 	    15, 57, 11, 93, 18, 18, 78, 85, 36, 35, 15, 7, 85, 31, 73, 57, 70 };
 
-	plot(HEIGHT, val, val + LEN(val), "Sample data generated with jot");
+	ARGBEGIN(argc, argv) {
+	case 'h':
+		flag_h = atoi(EARGF(usage()));
+		if (flag_h <= 0)
+			usage();
+		break;
+	} ARGEND;
+
+	plot(flag_h, val, val + LEN(val), "Sample data generated with jot");
 	return 0;
 }
