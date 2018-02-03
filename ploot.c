@@ -141,7 +141,7 @@ ring_add(double *ring, size_t len, size_t pos, double val)
 {
 	*ring = val;
 
-	return (pos >= len) ? pos + 1 : 0;
+	return (pos < len) ? pos + 1 : 0;
 }
 
 /*
