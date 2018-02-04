@@ -14,6 +14,9 @@
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
 #define LEN(x)		(sizeof(x) / sizeof(*x))
 
+int	flag_h = 20;
+char	*flag_t = NULL;
+
 /*
  * Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
  * the '\0' terminator).  Buffer overflow is ensured not to happen due to the
@@ -28,7 +31,7 @@ humanize(char *str, double val)
 	for (exp = 0; ABS(val) > 1000; exp++)
 		val /= 1000;
 
-	precision = (ABS(val) < 10) ? 3 : (ABS(val) < 100) ? 2 : 1;
+	precision = (ABS(val) < 10) ? (3) : (ABS(val) < 100) ? (2) : (1);
 	if (exp == 0)
 		precision++;
 	snprintf(str, 8, "%+.*f%c", precision, val, label[exp]);
@@ -139,7 +142,7 @@ ring_add(double *rbuf, size_t len, size_t pos, double val)
 {
 	*rbuf = val;
 
-	return (pos < len) ? pos + 1 : 0;
+	return (pos + 1 < len) ? (pos + 1) : (0);
 }
 
 /*
@@ -149,13 +152,8 @@ ring_add(double *rbuf, size_t len, size_t pos, double val)
 void
 ring_copy(double *buf, double *rbuf, size_t len, size_t pos)
 {
-	size_t	i = 0;
-
 	memcpy(buf, rbuf + pos, (len - pos) * sizeof(*rbuf));
 	memcpy(buf + (len - pos), rbuf, pos * sizeof(*rbuf));
-	printf("len: %zd, pos: %zd\n", len, pos);
-	for (i = 0; i < len; i++)
-		printf("%03zd: %lf\n", i, buf[i]);
 }
 
 /*
@@ -171,7 +169,7 @@ read_simple(double buf[MAX_VAL])
 
 	len = LEN(rbuf);
 	for (p = pos = 0; scanf("%lf\n", &val) > 0; p++)
-		pos = ring_add(rbuf, len, pos, val);
+		pos = ring_add(rbuf + pos, len, pos, val);
 	len = MIN(len, p);
 	pos = MIN(pos, p);
 
@@ -202,7 +200,7 @@ read_time_series(double *valv, time_t *timev)
 void
 usage(void)
 {
-	printf("usage: ploot [-h height]\n");
+	printf("usage: ploot [-h <height>] [-t <title>]\n");
 	exit(1);
 }
 
@@ -211,9 +209,6 @@ main(int argc, char **argv)
 {
 	double	val[MAX_VAL], *end;
 	char	c;
-
-	int	flag_h = 20;
-	char	*flag_t = NULL;
 
 	while ((c = getopt(argc, argv, "h:t:")) != -1) {
 		switch (c) {
