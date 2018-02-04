@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "arg.h"
 #include "config.h"
 
 #define MAX_VAL	80
@@ -13,9 +13,6 @@
 #define ABS(x)		((x) < 0 ? -(x) : (x))
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
 #define LEN(x)		(sizeof(x) / sizeof(*x))
-
-char	*argv0;
-int	flag_h = 20;
 
 /*
  * Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
@@ -63,7 +60,7 @@ title(char *str, int width)
 {
 	if (str == NULL)
 		return;
-	printf("%*s\n\n", (int)(width + strlen(str) + MARGIN) / 2, str);
+	printf("%*s\n", (int)(width + strlen(str) + MARGIN) / 2, str);
 }
 
 /*
@@ -119,7 +116,8 @@ plot(int height, double *beg, double *end, char *str)
 	double	top, bot, max;
 	int	h;
 
-	title(str, end - beg);
+	if (str != NULL)
+		title(str, end - beg);
 
 	max = maxdv(beg, end);
 	for (h = height + height % 2; h > 0; h -= 2) {
@@ -137,9 +135,9 @@ plot(int height, double *beg, double *end, char *str)
  * next postion.
  */
 size_t
-ring_add(double *ring, size_t len, size_t pos, double val)
+ring_add(double *rbuf, size_t len, size_t pos, double val)
 {
-	*ring = val;
+	*rbuf = val;
 
 	return (pos < len) ? pos + 1 : 0;
 }
@@ -151,8 +149,13 @@ ring_add(double *ring, size_t len, size_t pos, double val)
 void
 ring_copy(double *buf, double *rbuf, size_t len, size_t pos)
 {
+	size_t	i = 0;
+
 	memcpy(buf, rbuf + pos, (len - pos) * sizeof(*rbuf));
 	memcpy(buf + (len - pos), rbuf, pos * sizeof(*rbuf));
+	printf("len: %zd, pos: %zd\n", len, pos);
+	for (i = 0; i < len; i++)
+		printf("%03zd: %lf\n", i, buf[i]);
 }
 
 /*
@@ -163,16 +166,18 @@ ring_copy(double *buf, double *rbuf, size_t len, size_t pos)
 double *
 read_simple(double buf[MAX_VAL])
 {
-	/* ring buffer to keep the last `MAX_VAL' values */
 	double	rbuf[MAX_VAL], val;
 	size_t	p, pos, len;
 
 	len = LEN(rbuf);
 	for (p = pos = 0; scanf("%lf\n", &val) > 0; p++)
-		pos = ring_add(rbuf, val, len, pos);
+		pos = ring_add(rbuf, len, pos, val);
+	len = MIN(len, p);
+	pos = MIN(pos, p);
+
 	ring_copy(buf, rbuf, len, pos);
 
-	return buf + MIN(p, len);
+	return buf + len;
 }
 
 /*
@@ -184,7 +189,6 @@ read_simple(double buf[MAX_VAL])
 double *
 read_time_series(double *valv, time_t *timev)
 {
-	/* ring buffer to keep the last `MAX_VAL' values */
 	time_t	time_rbuf[MAX_VAL];
 	double	val_rbuf[MAX_VAL];
 
@@ -198,7 +202,7 @@ read_time_series(double *valv, time_t *timev)
 void
 usage(void)
 {
-	printf("usage: %s [-h height]\n", argv0);
+	printf("usage: ploot [-h height]\n");
 	exit(1);
 }
 
@@ -206,16 +210,28 @@ int
 main(int argc, char **argv)
 {
 	double	val[MAX_VAL], *end;
+	char	c;
 
-	ARGBEGIN(argc, argv) {
-	case 'h':
-		flag_h = atoi(EARGF(usage()));
-		if (flag_h <= 0)
+	int	flag_h = 20;
+	char	*flag_t = NULL;
+
+	while ((c = getopt(argc, argv, "h:t:")) != -1) {
+		switch (c) {
+		case -1:
+			break;
+		case 'h':
+			if ((flag_h = atoi(optarg)) <= 0)
+				usage();
+			break;
+		case 't':
+			flag_t = optarg;
+			break;
+		default:
 			usage();
-		break;
-	} ARGEND;
+		}
+	}
 
 	end = read_simple(val);
-	plot(flag_h, val, end, "Sample data generated with jot");
+	plot(flag_h, val, end, flag_t);
 	return 0;
 }
