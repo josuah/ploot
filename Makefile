@@ -1,4 +1,4 @@
-CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic
+CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
 
 all:ploot
 

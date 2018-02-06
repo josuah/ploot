@@ -56,7 +56,7 @@ humanize(char *str, double val)
 	precision = (ABS(val) < 10) ? (3) : (ABS(val) < 100) ? (2) : (1);
 	if (exp == 0)
 		precision++;
-	snprintf(str, 8, "%+.*f%c", precision, val, label[exp]);
+	sprintf(str, "%+.*f%c", precision, val, label[exp]);
 	if (val >= 0)
 		str[0] = ' ';
 }
@@ -254,7 +254,7 @@ main(int argc, char **argv)
 {
 	time_t	tbuf[MAX_VAL], *tend;
 	double	vbuf[MAX_VAL], *vend;
-	char	c;
+	int	c;
 
 	while ((c = getopt(argc, argv, "h:t:o:")) != -1) {
 		switch (c) {
