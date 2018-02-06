@@ -12,8 +12,8 @@
 
 #define ABS(x)		((x) < 0 ? -(x) : (x))
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
-#define LEN(x)		(sizeof(x) / sizeof(*x))
-
+#define MAX(x, y)	((x) > (y) ? (x) : (y))
+#define LEN(buf)	(sizeof(buf) / sizeof(*(buf)))
 
 /*
  * Add `val' at the current position `pos' of the `ring' buffer and set pos to
@@ -37,6 +37,7 @@ do {									\
 
 int	flag_h = 20;
 char	*flag_t = NULL;
+time_t	flag_o = 0;
 
 /*
  * Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
@@ -108,11 +109,13 @@ vaxis(double val, int pos)
  * Print horizontal axis for up to `col' values.
  */
 void
-haxis(int col)
+haxis(double *beg, double *end)
 {
+	double	*tp;
+
 	printf("%*d -+", MARGIN, 0);
-	while (col-- > 0)
-		putchar('-');
+	for (tp = beg; tp < end; tp++)
+		putchar((*tp < 0) ? ('x') : ('-'));
 	putchar('\n');
 }
 
@@ -151,7 +154,7 @@ plot(int height, double *beg, double *end, char *str)
 		vaxis(top, h);
 		line(beg, end, top, bot);
 	}
-	haxis(end - beg);
+	haxis(beg, end);
 }
 
 /*
@@ -169,7 +172,6 @@ read_simple(double buf[MAX_VAL])
 	for (p = pos = 0; scanf("%lf\n", &val) > 0; p++)
 		RING_ADD(rbuf, len, pos, val);
 	len = MIN(len, p);
-	pos = MIN(pos, p);
 
 	RING_COPY(buf, rbuf, len, pos);
 
@@ -182,21 +184,55 @@ read_simple(double buf[MAX_VAL])
  * least MAX_VAL wide and return a pointer to the last element of `vbuf' or NULL if the
  * input contains error.
  */
-double *
+time_t *
 read_time_series(double *vbuf, time_t *tbuf)
 {
-	size_t	p, pos, len;
+	size_t	p, pos, nul, len;
 	double	vrbuf[MAX_VAL], vval;
 	time_t	trbuf[MAX_VAL], tval;
 
 	len = LEN(vrbuf);
-	for (p = pos = 0; scanf("%zd %lf\n", &tval, &vval) > 0; p++)
+	for (p = pos = 0; scanf("%zd %lf\n", &tval, &vval) > 0; p++) {
 		RING_ADD(trbuf, len, pos, tval);
-		RING_ADD(vrbuf, len, pos, vval);
+		RING_ADD(vrbuf, len, nul, vval);
+	}
 	len = MIN(len, p);
-	pos = MIN(pos, p);
 
 	RING_COPY(tbuf, trbuf, len, pos);
+	RING_COPY(vbuf, vrbuf, len, pos);
+
+	return tbuf + len;
+}
+
+/*
+ * Walk from `tbeg' and `tend' and add offset in `tbuf' every time there is no
+ * value in `step' amount of time, by setting a value to -1.
+ */
+double *
+fill_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
+{
+	size_t	p, pos, len;
+	time_t	*tp, toff;
+	double	*vp, vrbuf[MAX_VAL];
+
+	/* Compute the average alignment of the timestamps values according to
+	 * the step size. */
+	toff = 0;
+	for (tp = tbeg; tp < tend; tp++)
+		toff += *tp % step;
+	toff = *tbeg + toff / (tend - tbeg) + step / 2;
+
+	/* Fill `vbuf' with gap added at each time gap using vrbuf as
+	 * intermediate ring buffer. */
+	len = LEN(vrbuf);
+	for (p = pos = 0, tp = tbeg, vp = vbuf; tp < tend; p++, vp++, tp++) {
+		for (; toff < *tp; toff += step)
+			RING_ADD(vrbuf, len, pos, -1);
+		RING_ADD(vrbuf, len, pos, *vp);
+		toff += step;
+	}
+	len = MAX(MIN(p, len), pos);
+
 	RING_COPY(vbuf, vrbuf, len, pos);
 
 	return vbuf + len;
@@ -205,20 +241,18 @@ read_time_series(double *vbuf, time_t *tbuf)
 void
 usage(void)
 {
-	printf("usage: ploot [-h <height>] [-t <title>]\n");
+	printf("usage: ploot [-h <height>] [-t <title>] -o <offset>\n");
 	exit(1);
 }
 
 int
 main(int argc, char **argv)
 {
-/*
-	time_t	tbuf[MAX_VAL];
-*/
+	time_t	tbuf[MAX_VAL], *tend;
 	double	vbuf[MAX_VAL], *vend;
 	char	c;
 
-	while ((c = getopt(argc, argv, "h:t:")) != -1) {
+	while ((c = getopt(argc, argv, "h:t:o:")) != -1) {
 		switch (c) {
 		case -1:
 			break;
@@ -229,12 +263,19 @@ main(int argc, char **argv)
 		case 't':
 			flag_t = optarg;
 			break;
+		case 'o':
+			flag_o = atol(optarg);
+			break;
 		default:
 			usage();
 		}
 	}
+	if (flag_o == 0)
+		usage();
 
-	vend = read_simple(vbuf);
+	tend = read_time_series(vbuf, tbuf);
+	vend = fill_gaps(tbuf, tend, vbuf, flag_o);
+
 	plot(flag_h, vbuf, vend, flag_t);
 	return 0;
 }
