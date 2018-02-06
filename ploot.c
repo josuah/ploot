@@ -14,6 +14,27 @@
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
 #define LEN(x)		(sizeof(x) / sizeof(*x))
 
+
+/*
+ * Add `val' at the current position `pos' of the `ring' buffer and set pos to
+ * the next postion.
+ */
+#define RING_ADD(rbuf, len, pos, val)					\
+do {									\
+	rbuf[pos] = val;						\
+	pos = (pos + 1 < len) ? (pos + 1) : (0);			\
+} while (0)
+
+/*
+ * Copy the ring buffer `rbuf' content with current position `pos' into the
+ * buffer `buf'.  Both buffer of length `len'.
+ */
+#define RING_COPY(buf, rbuf, len, pos)					\
+do {									\
+	memcpy(buf, rbuf + pos, (len - pos) * sizeof(*rbuf));		\
+	memcpy(buf + (len - pos), rbuf, pos * sizeof(*rbuf));		\
+} while (0)
+
 int	flag_h = 20;
 char	*flag_t = NULL;
 
@@ -134,29 +155,6 @@ plot(int height, double *beg, double *end, char *str)
 }
 
 /*
- * Add `val' at the current position `pos' of the `ring' buffer and return the
- * next postion.
- */
-size_t
-ring_add(double *rbuf, size_t len, size_t pos, double val)
-{
-	*rbuf = val;
-
-	return (pos + 1 < len) ? (pos + 1) : (0);
-}
-
-/*
- * Copy the ring buffer `rbuf' content with current position `pos' into the
- * buffer `buf'.  Both buffer of length `len'.
- */
-void
-ring_copy(double *buf, double *rbuf, size_t len, size_t pos)
-{
-	memcpy(buf, rbuf + pos, (len - pos) * sizeof(*rbuf));
-	memcpy(buf + (len - pos), rbuf, pos * sizeof(*rbuf));
-}
-
-/*
  * Read a simple format with one double per line and save the last `MAX_WIDTH'
  * values into `buf' which must be at least MAX_VAL wide and return a pointer
  * to the last element or NULL if the input contains error.
@@ -169,32 +167,39 @@ read_simple(double buf[MAX_VAL])
 
 	len = LEN(rbuf);
 	for (p = pos = 0; scanf("%lf\n", &val) > 0; p++)
-		pos = ring_add(rbuf + pos, len, pos, val);
+		RING_ADD(rbuf, len, pos, val);
 	len = MIN(len, p);
 	pos = MIN(pos, p);
 
-	ring_copy(buf, rbuf, len, pos);
+	RING_COPY(buf, rbuf, len, pos);
 
 	return buf + len;
 }
 
 /*
  * Read a format with blank-separated time_t-double pairs, one per line and save
- * the last `MAX_WIDTH' values into `timev' and `valv' which must both be at
- * least MAX_VAL wide and return a pointer to the last element or NULL if the
+ * the last `MAX_WIDTH' values into `tbuf' and `vbuf' which must both be at
+ * least MAX_VAL wide and return a pointer to the last element of `vbuf' or NULL if the
  * input contains error.
  */
 double *
-read_time_series(double *valv, time_t *timev)
+read_time_series(double *vbuf, time_t *tbuf)
 {
-	time_t	time_rbuf[MAX_VAL];
-	double	val_rbuf[MAX_VAL];
+	size_t	p, pos, len;
+	double	vrbuf[MAX_VAL], vval;
+	time_t	trbuf[MAX_VAL], tval;
 
-	(void)time_rbuf;
-	(void)val_rbuf;
-	(void)timev;
+	len = LEN(vrbuf);
+	for (p = pos = 0; scanf("%zd %lf\n", &tval, &vval) > 0; p++)
+		RING_ADD(trbuf, len, pos, tval);
+		RING_ADD(vrbuf, len, pos, vval);
+	len = MIN(len, p);
+	pos = MIN(pos, p);
 
-	return valv;
+	RING_COPY(tbuf, trbuf, len, pos);
+	RING_COPY(vbuf, vrbuf, len, pos);
+
+	return vbuf + len;
 }
 
 void
@@ -207,7 +212,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	double	val[MAX_VAL], *end;
+/*
+	time_t	tbuf[MAX_VAL];
+*/
+	double	vbuf[MAX_VAL], *vend;
 	char	c;
 
 	while ((c = getopt(argc, argv, "h:t:")) != -1) {
@@ -226,7 +234,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	end = read_simple(val);
-	plot(flag_h, val, end, flag_t);
+	vend = read_simple(vbuf);
+	plot(flag_h, vbuf, vend, flag_t);
 	return 0;
 }
