@@ -85,7 +85,7 @@ title(char *str, int width)
 {
 	if (str == NULL)
 		return;
-	printf("%*s\n", (int)(width + strlen(str) + MARGIN) / 2, str);
+	printf("%*s\n", (int)(width + strlen(str)) / 2 + MARGIN, str);
 }
 
 /*
@@ -179,20 +179,21 @@ read_simple(double buf[MAX_VAL])
 }
 
 /*
- * Read a format with blank-separated time_t-double pairs, one per line and save
+ * Read a format with comma separated time_t-double pairs, one per line and save
  * the last `MAX_WIDTH' values into `tbuf' and `vbuf' which must both be at
- * least MAX_VAL wide and return a pointer to the last element of `vbuf' or NULL if the
- * input contains error.
+ * least MAX_VAL wide and return a pointer to the last element of `vbuf' or
+ * NULL if the input contains error.
  */
 time_t *
 read_time_series(double *vbuf, time_t *tbuf)
 {
 	size_t	p, pos, nul, len;
-	double	vrbuf[MAX_VAL], vval;
+	double	vrbuf[MAX_VAL], vval, dval;
 	time_t	trbuf[MAX_VAL], tval;
 
 	len = LEN(vrbuf);
-	for (p = pos = 0; scanf("%zd %lf\n", &tval, &vval) > 0; p++) {
+	for (p = pos = 0; scanf("%lf,%lf\n", &dval, &vval) > 0; p++) {
+		tval = (time_t)dval;
 		RING_ADD(trbuf, len, pos, tval);
 		RING_ADD(vrbuf, len, nul, vval);
 	}
@@ -209,7 +210,7 @@ read_time_series(double *vbuf, time_t *tbuf)
  * value in `step' amount of time, by setting a value to -1.
  */
 double *
-fill_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
+skip_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
 {
 	size_t	p, pos, len;
 	time_t	*tp, toff;
@@ -274,7 +275,7 @@ main(int argc, char **argv)
 		usage();
 
 	tend = read_time_series(vbuf, tbuf);
-	vend = fill_gaps(tbuf, tend, vbuf, flag_o);
+	vend = skip_gaps(tbuf, tend, vbuf, flag_o);
 
 	plot(flag_h, vbuf, vend, flag_t);
 	return 0;
