@@ -143,6 +143,7 @@ plot(int height, double *beg, double *end, char *str)
 	double	top, bot, max;
 	int	h;
 
+	putchar('\n');
 	if (str != NULL)
 		title(str, end - beg);
 
@@ -155,6 +156,8 @@ plot(int height, double *beg, double *end, char *str)
 		line(beg, end, top, bot);
 	}
 	haxis(beg, end);
+
+	putchar('\n');
 }
 
 /*
