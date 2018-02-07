@@ -56,7 +56,8 @@ humanize(char *str, double val)
 	precision = (ABS(val) < 10) ? (3) : (ABS(val) < 100) ? (2) : (1);
 	if (exp == 0)
 		precision++;
-	sprintf(str, "%+.*f%c", precision, val, label[exp]);
+	snprintf(str, 8, "%+.*f%c", precision, val, label[exp]);
+	str[7] = '\0';
 	if (val >= 0)
 		str[0] = ' ';
 }
@@ -85,7 +86,7 @@ title(char *str, int width)
 {
 	if (str == NULL)
 		return;
-	printf("%*s\n", (int)(width + strlen(str)) / 2 + MARGIN, str);
+	printf("%*s\n", (int)(width + strlen(str)) / 2 + MARGIN + 3, str);
 }
 
 /*
@@ -95,7 +96,7 @@ title(char *str, int width)
 void
 vaxis(double val, int pos)
 {
-	char	label[8];
+	char	label[10];
 
 	if (pos % 4 == 0) {
 		humanize(label, val);
@@ -138,7 +139,7 @@ line(double *beg, double *end, double top, double bot)
  * If `str' is not NULL, it is set as a title above the graph.
  */
 void
-plot(int height, double *beg, double *end, char *str)
+plot(double *beg, double *end, int height, char *str)
 {
 	double	top, bot, max;
 	int	h;
@@ -245,7 +246,7 @@ skip_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
 void
 usage(void)
 {
-	printf("usage: ploot [-h <height>] [-t <title>] -o <offset>\n");
+	printf("usage: ploot [-h <height>] [-o <offset>] [-t <title>]\n");
 	exit(1);
 }
 
@@ -274,12 +275,14 @@ main(int argc, char **argv)
 			usage();
 		}
 	}
-	if (flag_o == 0)
-		usage();
 
-	tend = read_time_series(vbuf, tbuf);
-	vend = skip_gaps(tbuf, tend, vbuf, flag_o);
+	if (flag_o == 0) {
+		vend = read_simple(vbuf);
+	} else {
+		tend = read_time_series(vbuf, tbuf);
+		vend = skip_gaps(tbuf, tend, vbuf, flag_o);
+	}
 
-	plot(flag_h, vbuf, vend, flag_t);
+	plot(vbuf, vend, flag_h, flag_t);
 	return 0;
 }
