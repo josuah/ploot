@@ -183,7 +183,7 @@ read_simple(double buf[MAX_VAL])
 }
 
 /*
- * Read a format with comma separated time_t-double pairs, one per line and save
+ * Read a format with blank separated time_t-double pairs, one per line and save
  * the last `MAX_WIDTH' values into `tbuf' and `vbuf' which must both be at
  * least MAX_VAL wide and return a pointer to the last element of `vbuf' or
  * NULL if the input contains error.
@@ -196,7 +196,7 @@ read_time_series(double *vbuf, time_t *tbuf)
 	time_t	trbuf[MAX_VAL], tval;
 
 	len = LEN(vrbuf);
-	for (p = pos = 0; scanf("%lf,%lf\n", &dval, &vval) > 0; p++) {
+	for (p = pos = 0; scanf("%lf %lf\n", &dval, &vval) > 0; p++) {
 		tval = (time_t)dval;
 		RING_ADD(trbuf, len, pos, tval);
 		RING_ADD(vrbuf, len, nul, vval);
