@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "config.h"
 
@@ -158,8 +159,6 @@ plot(double *beg, double *end, int height, char *str, time_t start)
 	int	h;
 
 	putchar('\n');
-	if (str != NULL)
-		title(str, end - beg);
 
 	max = maxdv(beg, end);
 	for (h = height + height % 2; h > 0; h -= 2) {
@@ -169,7 +168,11 @@ plot(double *beg, double *end, int height, char *str, time_t start)
 		vaxis(top, h);
 		line(beg, end, top, bot);
 	}
+
 	haxis(beg, end, start);
+
+	if (str != NULL)
+		title(str, end - beg);
 
 	putchar('\n');
 }
