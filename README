@@ -1,0 +1,60 @@
+PLOOT(1)                    General Commands Manual                   PLOOT(1)
+
+NAME
+     ploot – plain text plotting tool
+
+SYNOPSIS
+     ploot [-h height] [-o offset] [-t title]
+
+DESCRIPTION
+     The ploot utility reads decimal values from stdin and print a plain text
+     graph of the values to stdout.  The values are separated by blanks or
+     newlines, and can be either a plain list or a time serie (if the -o flag
+     is set)
+
+     -h height
+             Sets the height of the plot in characters.
+
+     -o offset
+             Read data as time series: the input alternates UNIX epoch and
+             value to be plotted.  The time stamps are assumed to be at an
+             interval of offset.
+
+     -t title
+             Print title centered at the bottom of the graph.
+
+EXIT STATUS
+     The ploot utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     % awk 'BEGIN { for (i=0; i<60; i++) print sin(i/3)+1 }' | ploot -h 10 -t List
+
+              |   ....               ....               ....
+      1.5963 -|  ::::::.            ::::::.           .::::::            .:
+              |.::::::::.         .::::::::.         .::::::::.         .::
+      0.7982 -|:::::::::::       .::::::::::.       .::::::::::.       ::::
+              |::::::::::::.    ::::::::::::::.   .::::::::::::::    .:::::
+           0 -+------------------------------------------------------------
+                                           List
+
+     % ploot -h 8 -o 200 -t 'Time series'
+     1518780448 12 1518780643 13 1518780848 31 1518781028 19 1518781291 23
+     1518781423 20 1518781687 10 1518781819 13 1518782215 22 1518782412 11
+     1518782632 18 1518782822 11 1518783039 16 1518783235 21 1518783499 21
+     1518786629 30 1518786812 28 1518787012 11 1518787202 11 1518787433 11
+     1518787629 10 1518788042 16 1518788333 29 1518788494 26 1518788633 12
+     1518788821 28 1518789072 11 1518789201 11 1518789421 11 1518789630 11
+
+      31.000 -|  :                            ..      .  .
+              |  : ..   .    ..               ::      :: :
+      15.500 -|..:::: . : : :::               ::     :::.:
+              |:::::::: :::::::               :::::: :::::::::
+           0 -+--------x-------xxxxxxxxxxxxxxx------x---------
+             12:27  12:50  13:14  13:37  14:00  14:24  14:47
+          2018/02/16                                  2018/02/16
+                                 Time series
+
+     The ‘x’ symbols on the horizontal axis represent a lack of data for that
+     interval.
+
+Void Linux                     February 15, 2018                    Void Linux
