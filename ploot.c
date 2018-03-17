@@ -6,12 +6,15 @@
 #include <unistd.h>
 #include <time.h>
 
+#include "arg.h"
 #include "config.h"
 
 #define ABS(x)		((x) < 0 ? -(x) : (x))
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
 #define MAX(x, y)	((x) > (y) ? (x) : (y))
 #define LEN(buf)	(sizeof(buf) / sizeof(*(buf)))
+
+char *argv0;
 
 /*
 ** Add `val' at the current position `pos' of the `ring' buffer and set pos to
@@ -36,9 +39,9 @@ do {									\
 #define MAX_VAL	80
 #define MARGIN	7
 
-int	flag_h = 20;
-char	*flag_t = NULL;
-time_t	flag_o = 0;
+int	hflag = 20;
+char	*tflag = NULL;
+time_t	oflag = 0;
 
 /*
 ** Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
@@ -121,13 +124,13 @@ haxis(double *beg, double *end, time_t time)
 	for (tp = beg; tp < end; tp++)
 		putchar((*tp < 0) ? ('x') : ('-'));
 	putchar('\n');
-	if (flag_o > 0) {
+	if (oflag > 0) {
 		printf("%*c", MARGIN - 1, ' ');
 		strftime(dbeg, sizeof(dbeg), "%Y/%m/%d", localtime(&time));
 		for (tp = beg; tp < end; tp += 7) {
 			strftime(buf, sizeof(buf), "  %H:%M", localtime(&time));
 			fputs(buf, stdout);
-			time += flag_o * 7;
+			time += oflag * 7;
 		}
 		strftime(dend, sizeof(dend), "%Y/%m/%d", localtime(&time));
 		printf("\n     %-*s %s\n", (int)(beg - end) + 4, dbeg, dend);
@@ -271,36 +274,31 @@ main(int argc, char **argv)
 {
 	time_t	tbuf[MAX_VAL], *tend, start;
 	double	vbuf[MAX_VAL], *vend;
-	int	c;
 
-	while ((c = getopt(argc, argv, "h:t:o:")) != -1) {
-		switch (c) {
-		case -1:
-			break;
-		case 'h':
-			if ((flag_h = atoi(optarg)) <= 0)
-				usage();
-			break;
-		case 't':
-			flag_t = optarg;
-			break;
-		case 'o':
-			flag_o = atol(optarg);
-			break;
-		default:
+	ARGBEGIN(argc, argv) {
+	case 'h':
+		if ((hflag = atoi(EARGF(usage()))) <= 0)
 			usage();
-		}
-	}
+		break;
+	case 't':
+		tflag = EARGF(usage());
+		break;
+	case 'o':
+		oflag = atol(EARGF(usage()));
+		break;
+	default:
+		usage();
+	} ARGEND
 
-	if (flag_o == 0) {
+	if (oflag == 0) {
 		vend = read_simple(vbuf);
 		start = 0;
 	} else {
 		tend = read_time_series(vbuf, tbuf);
-		vend = skip_gaps(tbuf, tend, vbuf, flag_o);
+		vend = skip_gaps(tbuf, tend, vbuf, oflag);
 		start = *tbuf;
 	}
 
-	plot(vbuf, vend, flag_h, flag_t, start);
+	plot(vbuf, vend, hflag, tflag, start);
 	return 0;
 }
