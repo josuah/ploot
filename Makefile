@@ -1,17 +1,20 @@
 CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
 
-.PHONY: all
-all:ploot
+SRC = font.c
+
+OBJ = $(SRC:.c=.o)
+
+all:x ploot
 
 ploot.o: config.h arg.h
-ploot: ploot.o
-	${CC} -static -o ploot ploot.o
+ploot: $(OBJ)
+	${CC} -static -o $@ $(OBJ)
 
-.PHONY: install
-install: ploot
+install:x ploot
 	mkdir -p ${PREFIX}/bin
 	cp ploot ${PREFIX}/bin/ploot
 
-.PHONY: clean
-clean:
+clean:x
 	rm -f *.o ploot
+
+x:
