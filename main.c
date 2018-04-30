@@ -7,11 +7,12 @@
 #include "ffdraw.h"
 #include "font_14x7.h"
 
-/* as you see, no css skills needed */
-
-#define MARGIN 5
 #define FONT_H 14
 #define FONT_W 7
+
+/* as you see, no css skills needed */
+
+#define MARGIN 2
 
 /* height */
 
@@ -21,27 +22,27 @@
 
 #define IMAGE_H (TITLE_H + PLOT_H + XLABEL_H)
 
-#define TITLE_B (0)
-#define TITLE_E (TITLE_H)
-#define PLOT_X_B (TITLE_H)
-#define PLOT_X_E (IMAGE_H - XLABEL_H)
-#define XLABEL_B (IMAGE_H - XLABEL_H)
-#define XLABEL_E (IMAGE_H)
+#define TITLE_MAX (IMAGE_H)
+#define TITLE_MIN (IMAGE_H - TITLE_H)
+#define PLOT_X_MAX (IMAGE_H - TITLE_H)
+#define PLOT_X_MIN (XLABEL_H)
+#define XLABEL_MAX (XLABEL_H)
+#define XLABEL_MIN (0)
 
 /* width */
 
-#define YLABEL_W (MARGIN + 50 + MARGIN)
+#define YLABEL_W (MARGIN + 20 + MARGIN)
 #define PLOT_W 500
 #define LEGEND_W (MARGIN + 70 + MARGIN)
 
 #define IMAGE_W (YLABEL_W + PLOT_W + LEGEND_W)
 
-#define YLABEL_B (0)
-#define YLABEL_E (YLABEL_W)
-#define PLOT_Y_B (YLABEL_W)
-#define PLOT_Y_E (IMAGE_W - LEGEND_W)
-#define LEGEND_B (IMAGE_W - LEGEND_W)
-#define LEGEND_E (IMAGE_W)
+#define LEGEND_MAX (IMAGE_W)
+#define LEGEND_MIN (IMAGE_W - LEGEND_W)
+#define PLOT_Y_MAX (IMAGE_W - LEGEND_W)
+#define PLOT_Y_MIN (YLABEL_W)
+#define YLABEL_MAX (YLABEL_W)
+#define YLABEL_MIN (0)
 
 #define MID(x, y) ((x - y) / 2)
 
@@ -51,30 +52,30 @@ Color c_axis = { 0xffff, 0xffff, 0xffff, 0xfff };
 Font *font = &font_14x7;
 
 void
-ffplot_xaxis(Canvas *can, Color col, time_t tmax, time_t tstep)
+ffplot_xaxis(Canvas *can, Color label, Color grid, time_t tmax, time_t tstep)
 {
 	time_t t;
-	int x, y, ystep, width;
+	int y, ystep;
 	char str[sizeof("YYYY/MM/DD")], *fmt;
 
 	if (tstep < 3600) {
-		fmt = "%H:%M:%S";
-		width = sizeof("HH:MM:SS");
+		fmt = " %H:%M:%S ";
+		ystep = sizeof(" HH:MM:SS ") * FONT_W;
 	} else {
-		fmt = "%Y/%m/%d";
-		width = sizeof("YYYY/MM/DD");
+		fmt = " %Y/%m/%d ";
+		ystep = sizeof(" YYYY/MM/DD ") * FONT_W;
 	}
 
-	ystep = MARGIN + FONT_W * width + MARGIN;
-
 	t = tmax % tstep;
-	x = XLABEL_B + FONT_H / 2;
-	y = PLOT_Y_B + PLOT_W % ystep - width / 2;
+	y = PLOT_Y_MAX + PLOT_W % ystep - ystep;
 
-	while (y > PLOT_Y_B) {
+	while (y > PLOT_Y_MIN) {
 		strftime(str, sizeof(str), fmt, localtime(&t));
-		ffdraw_str(can, col, str, font, x, y);
-
+		ffdraw_str(can, label, str, font,
+			XLABEL_MIN + XLABEL_H / 2, y - ystep / 2 + FONT_W);
+		ffdraw_line(can, grid,
+			PLOT_X_MIN, y,
+			PLOT_X_MAX, y);
 		y -= ystep;
 		t -= tstep;
 	}
@@ -102,10 +103,11 @@ static void
 ffdraw(Canvas *can)
 {
 	Color col1 = { 0x2222, 0x2222, 0x2222, 0xffff };
-	Color col2 = { 0x3333, 0xffff, 0x8888, 0xffff };
+	Color label = { 0x3333, 0xffff, 0x8888, 0xffff };
+	Color grid = { 0x4444, 0x4444, 0x4444, 0xffff };
 
 	ffdraw_fill(can, col1);
-	ffplot_xaxis(can, col2, 3600 * 24 * 30, 360);
+	ffplot_xaxis(can, label, grid, 3600 * 24 * 30, 360);
 /*
 	ffdraw_line(can, col2, 49,1,9,79);
 	ffdraw_str(can, col2, "R\\S`T'UaVbWcYdZe\nfghb\tjoi\rklmnopqrstuvwxyz{|}", font, 44, 10);
