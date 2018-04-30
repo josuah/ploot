@@ -20,4 +20,5 @@ void		 ffdraw_pixel	(Canvas *, Color, int, int);
 void		 ffdraw_rectangle(Canvas *, Color, int, int, int, int);
 void		 ffdraw_line	(Canvas *, Color, int, int, int, int);
 void		 ffdraw_char	(Canvas *, Color, char, Font *, int, int);
+void		 ffdraw_str	(Canvas *, Color, char *, Font *, int, int);
 void		 ffdraw_fill	(Canvas *, Color);

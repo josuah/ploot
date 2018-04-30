@@ -22,10 +22,8 @@ void
 ffdraw_pixel(Canvas *can, Color col,
 	int x, int y)
 {
-/* Make it segfault early. * /
 	x = MIN(can->w - 1, x);
 	y = MIN(can->h - 1, y);
-/ **/
 	memcpy(can->b + x + (can->h - 1 - y) * can->w, col, sizeof(*can->b));
 }
 
@@ -45,7 +43,7 @@ ffdraw_rectangle(Canvas *can, Color col,
 }
 
 /*
- * Adapted from Bresenham's line algorithm and dcat's tplot.
+ * From Bresenham's line algorithm and dcat's tplot.
  */
 void
 ffdraw_line(Canvas *can, Color col,
@@ -94,6 +92,18 @@ ffdraw_char(Canvas *can, Color col, char c, Font *f,
 		for (yf = 0; yf < f->h; yf++)
 			if (f->b[(int)c][(f->h - yf - 1) * f->w + xf] > 0)
 				ffdraw_pixel(can, col, x + xf, y + yf);
+}
+
+/*
+ * Draw a left aligned string without wrapping it.
+ */
+void
+ffdraw_str(Canvas *can, Color col, char *s, Font *f,
+	int x, int y)
+{
+	for (; *s; x += f->w, s++)
+		ffdraw_char(can, col, *s, f, x, y);
+		
 }
 
 void

@@ -19,9 +19,7 @@ ffdraw(Canvas *can)
 
 	ffdraw_fill(can, col1);
 	ffdraw_line(can, col2, 49,1,9,79);
-	ffdraw_char(can, col2, '0' - 1, &font_14x6, 44, 50);
-	ffdraw_char(can, col2, '0' + 0, &font_14x6, 50, 50);
-	ffdraw_char(can, col2, '0' + 1, &font_14x6, 56, 50);
+	ffdraw_str(can, col2, "01234", &font_14x6, 44, 50);
 }
 
 int
