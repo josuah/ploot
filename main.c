@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 #include "ffdraw.h"
-#include "font-14x6.h"
+#include "font_14x7.h"
 
-#define WIDTH 100
+#define WIDTH 500
 #define HEIGHT 100
 
 Color buffer[WIDTH * HEIGHT];
@@ -19,7 +19,7 @@ ffdraw(Canvas *can)
 
 	ffdraw_fill(can, col1);
 	ffdraw_line(can, col2, 49,1,9,79);
-	ffdraw_str(can, col2, "01234", &font_14x6, 44, 50);
+	ffdraw_str(can, col2, "R\\S`T'UaVbWcYdZe\nfghb\tjoi\rklmnopqrstuvwxyz{|}", &font_14x7, 44, 50);
 }
 
 int

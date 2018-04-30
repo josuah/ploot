@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "ffdraw.h"
-#include "font-14x6.h"
+#include "font_14x7.h"
 
 #define WIDTH 100
 #define HEIGHT 100
@@ -22,8 +22,8 @@ void
 ffdraw_pixel(Canvas *can, Color col,
 	int x, int y)
 {
-	x = MIN(can->w - 1, x);
-	y = MIN(can->h - 1, y);
+	if (x >= can->w || y >= can->h)
+		return;
 	memcpy(can->b + x + (can->h - 1 - y) * can->w, col, sizeof(*can->b));
 }
 
@@ -85,6 +85,8 @@ ffdraw_char(Canvas *can, Color col, char c, Font *f,
 {
 	int xf, yf;
 
+	if (c & 0x80)
+		c = '\0';
 	x -= f->w / 2;
 	y -= f->h / 2;
 

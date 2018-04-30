@@ -1,6 +1,6 @@
 CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
 
-SRC = main.c ffdraw.c font-14x6.c
+SRC = main.c ffdraw.c font_14x7.c
 
 OBJ = $(SRC:.c=.o)
 
