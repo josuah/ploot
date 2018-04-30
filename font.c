@@ -1,5 +1,9 @@
 /*
  * Render bitmapped font as a farbfeld image
+ *
+ * The convention used:                                      y
+ * - (0,0) is at the lower left corner of the canvas.        |
+ * - (0,1) is above it.                                      +--x
  */
 
 #include <arpa/inet.h>
@@ -32,6 +36,10 @@ void
 ffdraw_pixel(Canvas *can, Color c,
 	int x, int y)
 {
+/* Make it segfault early.
+	x = MIN(can->w - 1, x);
+	y = MIN(can->h - 1, y);
+*/
 	memcpy(can->b + x + (can->h - 1 - y) * can->w, c, sizeof(*can->b));
 }
 
@@ -50,20 +58,37 @@ ffdraw_rectangle(Canvas *can, Color c,
 			ffdraw_pixel(can, c, x, y);
 }
 
-void
+/*
+ * Adapted from Bresenham's line algorithm and dcat's tplot.
+ */
+static void
 ffdraw_line(Canvas *can, Color c,
-	int x1, int y1,
-	int x2, int y2)
+	int x0, int y0,
+	int x1, int y1)
 {
-	int x, y;
+	int dx, dy, sx, sy, err, e;
 
-	(void)c;
-	(void)can;
+	sx = x0 < x1 ? 1 : -1;
+	sy = y0 < y1 ? 1 : -1;
+	dx = abs(x1 - x0);
+	dy = abs(y1 - y0);
+	err = (dx > dy ? dx : -dy) / 2;
 
-	x = x1;
-	y = y1;
-	while (x < x2 && y < y2) {
-		x++; y++;
+	for (;;) {
+		ffdraw_pixel(can, c, x0, y0);
+
+		if (x0 == x1 && y0 == y1)
+			break;
+
+		e = err;
+		if (e > -dx) {
+			x0 += sx;
+			err -= dy;
+		}
+		if (e < dy) {
+			y0 += sy;
+			err += dx;
+		}
 	}
 }
 
@@ -80,9 +105,9 @@ ffdraw(Canvas *can)
 	Color c2 = { 0x3333, 0xffff, 0x8888, 0xffff };
 
 	ffdraw_fill(can, c1);
-	ffdraw_rectangle(can, c2,
-		0, 20,
-		can->w - 10, 4);
+	ffdraw_line(can, c2,
+		0, 0,
+		50 - 1, 80 - 1);
 }
 
 void
