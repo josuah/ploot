@@ -1,12 +1,14 @@
 #include <stddef.h>
 
+/*
+ * Macros to make the fonts header file more readable.
+ */
 #define _ 0
 #define X 1
-#define B(x) char glyph_ ## x[WIDTH * HEIGHT]
+#define B(x) char glyph_ ## x[FONT_WIDTH * FONT_HEIGHT]
 #define b(x) glyph_ ## x
 #define NOPR NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 #define NOPRINT NOPR, NOPR, NOPR, NOPR
-
 #define FONT(x) char *font_ ## x[] = { \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
