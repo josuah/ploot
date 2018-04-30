@@ -1,29 +1,29 @@
 #include <stddef.h>
+#include <stdint.h>
+#include "ffdraw.h"
 
 /*
  * Macros to make the fonts header file more readable.
  */
 #define _ 0
 #define X 1
-#define B(x) char glyph_ ## x[FONT_WIDTH * FONT_HEIGHT]
-#define b(x) glyph_ ## x
-#define NOPR NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-#define NOPRINT NOPR, NOPR, NOPR, NOPR
-#define FONT(x) char *font_ ## x[] = { \
+#define C(x) char glyph_ ## x[FONT_WIDTH * FONT_HEIGHT]
+
+#define FONT(x) Font x = { FONT_WIDTH, FONT_HEIGHT, { \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, \
-	b(space), b(bang), b(double), b(hash), \
-	b(dollar), b(percent), b(ampersand), b(single), \
-	b(l_round), b(r_round), b(asterisk), b(plus), \
-	b(coma), b(minus), b(dot), b(slash), \
-	b(0), b(1), b(2), b(3), \
-	b(4), b(5), b(6), b(7), \
-	b(8), b(9), b(column), b(semicolumn), \
-	b(l_angle), b(equal), b(r_angle), b(question), \
-	b(column), b(semicolumn), b(l_angle), b(equal), \
-	b(r_angle), b(question) \
-}
+	glyph_space, glyph_bang, glyph_double, glyph_hash, \
+	glyph_dollar, glyph_percent, glyph_ampersand, glyph_single, \
+	glyph_l_round, glyph_r_round, glyph_asterisk, glyph_plus, \
+	glyph_coma, glyph_minus, glyph_dot, glyph_slash, \
+	glyph_0, glyph_1, glyph_2, glyph_3, \
+	glyph_4, glyph_5, glyph_6, glyph_7, \
+	glyph_8, glyph_9, glyph_column, glyph_semicolumn, \
+	glyph_l_angle, glyph_equal, glyph_r_angle, glyph_question, \
+	glyph_column, glyph_semicolumn, glyph_l_angle, glyph_equal, \
+	glyph_r_angle, glyph_question \
+} }
