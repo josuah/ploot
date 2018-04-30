@@ -17,3 +17,5 @@ clean:x
 	rm -f *.o ploot
 
 x:
+
+$(SRC): arg.h ffdraw.h font.h font_14x7.h

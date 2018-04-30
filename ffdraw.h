@@ -12,7 +12,7 @@ typedef struct {
 typedef struct {
 	int w;		/* width */
 	int h;		/* height */
-	char *b[255];	/* buffer */
+	char *b[128];	/* buffer */
 } Font;
 
 /* ffdraw.c */

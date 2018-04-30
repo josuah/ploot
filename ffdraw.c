@@ -11,20 +11,24 @@
 #include <stdlib.h>
 
 #include "ffdraw.h"
-#include "font_14x7.h"
 
 #define WIDTH 100
 #define HEIGHT 100
 
 Color buffer[WIDTH * HEIGHT];
 
+/*
+ * Convert (x,y) coordinates to (row,col) for printing into the buffer.
+ * The buffer only contain one number, so the coordinate is a single integer:
+ *	width * x + y.
+ */
 void
 ffdraw_pixel(Canvas *can, Color col,
 	int x, int y)
 {
-	if (x >= can->w || y >= can->h)
+	if (x >= can->h || y >= can->w)
 		return;
-	memcpy(can->b + x + (can->h - 1 - y) * can->w, col, sizeof(*can->b));
+	memcpy(can->b + can->w * (can->h - 1 - x) + y, col, sizeof(*can->b));
 }
 
 void
@@ -87,12 +91,12 @@ ffdraw_char(Canvas *can, Color col, char c, Font *f,
 
 	if (c & 0x80)
 		c = '\0';
-	x -= f->w / 2;
-	y -= f->h / 2;
+	x -= f->h / 2;
+	y -= f->w / 2;
 
-	for (xf = 0; xf < f->w; xf++)
-		for (yf = 0; yf < f->h; yf++)
-			if (f->b[(int)c][(f->h - yf - 1) * f->w + xf] > 0)
+	for (xf = 0; xf < f->h; xf++)
+		for (yf = 0; yf < f->w; yf++)
+			if (f->b[(int)c][f->w * (f->h - xf - 1) + yf] > 0)
 				ffdraw_pixel(can, col, x + xf, y + yf);
 }
 
@@ -103,13 +107,12 @@ void
 ffdraw_str(Canvas *can, Color col, char *s, Font *f,
 	int x, int y)
 {
-	for (; *s; x += f->w, s++)
+	for (; *s != '\0'; y += f->w, s++)
 		ffdraw_char(can, col, *s, f, x, y);
-		
 }
 
 void
 ffdraw_fill(Canvas *can, Color col)
 {
-	ffdraw_rectangle(can, col, 0, 0, can->w - 1, can->h - 1);
+	ffdraw_rectangle(can, col, 0, 0, can->h - 1, can->w - 1);
 }
