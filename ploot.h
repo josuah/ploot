@@ -25,8 +25,13 @@ typedef struct {
 	time_t *t;	/* array of timestamps */
 	double *v;	/* array of values */
 	int n;		/* number of values */
-	char *name;	/* for the legend */
+	char *label;	/* for the legend */
 } Vlist;
+
+typedef struct {
+	char *name;
+	Color col;
+} ColorList;
 
 /* ffdraw.c */
 void		 ffdraw_pixel	(Canvas *, Color *, int, int);
@@ -42,3 +47,7 @@ void		 ffdraw_print	(Canvas *);
 /* ffplot.c */
 void		 ffdraw		(char *, char *, Vlist *, int, double, double,
 				 double, time_t, time_t, time_t);
+
+/* util.c */
+char		*strsep		(char **, const char *);
+

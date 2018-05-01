@@ -193,7 +193,7 @@ legend(Canvas *can, Color *label_fg, Vlist *v, int n)
 		ffdraw_str_left(can, &v->col, "\1", font, x, y);
 
 		y += FONT_W * 2;
-		ffdraw_str_left(can, label_fg, v->name, font, x, y);
+		ffdraw_str_left(can, label_fg, v->label, font, x, y);
 	}
 }
 
