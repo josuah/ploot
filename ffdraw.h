@@ -1,3 +1,5 @@
+#include <time.h>
+
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
@@ -7,6 +9,8 @@ typedef struct {
 	int w;		/* width */
 	int h;		/* height */
 	Color *b;	/* buffer */
+	int x;		/* x offset */
+	int y;		/* x offset */
 } Canvas;
 
 typedef struct {
@@ -15,10 +19,21 @@ typedef struct {
 	char *b[128];	/* buffer */
 } Font;
 
+typedef struct {
+	Color col;	/* for drawing the curve and the legend */
+/*	time_t *t;	/ * array of timestamps */
+	double *v;	/* array of values */
+	int n;		/* number of values */
+	time_t step;
+	char *name;	/* for the legend */
+} Vlist;
+
 /* ffdraw.c */
-void		 ffdraw_pixel	(Canvas *, Color, int, int);
-void		 ffdraw_rectangle(Canvas *, Color, int, int, int, int);
-void		 ffdraw_line	(Canvas *, Color, int, int, int, int);
-void		 ffdraw_char	(Canvas *, Color, char, Font *, int, int);
-void		 ffdraw_str	(Canvas *, Color, char *, Font *, int, int);
-void		 ffdraw_fill	(Canvas *, Color);
+void		 ffdraw_pixel	(Canvas *, Color *, int, int);
+void		 ffdraw_rectangle(Canvas *, Color *, int, int, int, int);
+void		 ffdraw_line	(Canvas *, Color *, int, int, int, int);
+void		 ffdraw_char	(Canvas *, Color *, char, Font *, int, int);
+void		 ffdraw_str_left(Canvas *, Color *, char *, Font *, int, int);
+void		 ffdraw_str_center(Canvas *, Color *, char *, Font *, int, int);
+void		 ffdraw_str_right(Canvas *, Color *, char *, Font *, int, int);
+void		 ffdraw_fill	(Canvas *, Color *);

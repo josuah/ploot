@@ -1,13 +1,14 @@
 CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
+LDFLAGS = -static
 
 SRC = main.c ffdraw.c font_14x7.c
-
 OBJ = $(SRC:.c=.o)
+LIB = -lm
 
 all:x ploot
 
 ploot: $(OBJ)
-	${CC} -static -o $@ $(OBJ)
+	${CC} $(LDFLAGS) -o $@ $(OBJ) $(LIB)
 
 install:x ploot
 	mkdir -p ${PREFIX}/bin

@@ -12,27 +12,25 @@
 
 #include "ffdraw.h"
 
-#define WIDTH 100
-#define HEIGHT 100
-
-Color buffer[WIDTH * HEIGHT];
-
 /*
  * Convert (x,y) coordinates to (row,col) for printing into the buffer.
  * The buffer only contain one number, so the coordinate is a single integer:
  *	width * x + y.
+ * The coordinates are shifted by offx and offy to permit relative coordinates.
  */
 void
-ffdraw_pixel(Canvas *can, Color col,
+ffdraw_pixel(Canvas *can, Color *col,
 	int x, int y)
 {
-	if (x >= can->h || y >= can->w)
+	x += can->x;
+	y += can->y;
+	if (x < 0 || x >= can->h || y < 0 || y >= can->w)
 		return;
 	memcpy(can->b + can->w * (can->h - 1 - x) + y, col, sizeof(*can->b));
 }
 
 void
-ffdraw_rectangle(Canvas *can, Color col,
+ffdraw_rectangle(Canvas *can, Color *col,
 	int x1, int y1,
 	int x2, int y2)
 {
@@ -50,7 +48,7 @@ ffdraw_rectangle(Canvas *can, Color col,
  * From Bresenham's line algorithm and dcat's tplot.
  */
 void
-ffdraw_line(Canvas *can, Color col,
+ffdraw_line(Canvas *can, Color *col,
 	int x0, int y0,
 	int x1, int y1)
 {
@@ -81,18 +79,18 @@ ffdraw_line(Canvas *can, Color col,
 }
 
 /*
- * Draw a coloured glyph from font f centerd on x, y
+ * Draw a coloured glyph from font f centered on x.
  */
 void
-ffdraw_char(Canvas *can, Color col, char c, Font *f,
+ffdraw_char(Canvas *can, Color *col, char c, Font *f,
 	int x, int y)
 {
 	int xf, yf;
 
 	if (c & 0x80)
 		c = '\0';
+
 	x -= f->h / 2;
-	y -= f->w / 2;
 
 	for (xf = 0; xf < f->h; xf++)
 		for (yf = 0; yf < f->w; yf++)
@@ -104,15 +102,45 @@ ffdraw_char(Canvas *can, Color col, char c, Font *f,
  * Draw a left aligned string without wrapping it.
  */
 void
-ffdraw_str(Canvas *can, Color col, char *s, Font *f,
+ffdraw_str_left(Canvas *can, Color *col, char *s, Font *f,
 	int x, int y)
 {
 	for (; *s != '\0'; y += f->w, s++)
 		ffdraw_char(can, col, *s, f, x, y);
 }
 
+/*
+ * Draw a center aligned string without wrapping it.
+ */
 void
-ffdraw_fill(Canvas *can, Color col)
+ffdraw_str_center(Canvas *can, Color *col, char *s, Font *f,
+	int x, int y)
 {
+	y -= f->w * strlen(s) / 2;
+	ffdraw_str_left(can, col, s, f, x, y);
+}
+
+/*
+ * Draw a right aligned string without wrapping it.
+ */
+void
+ffdraw_str_right(Canvas *can, Color *col, char *s, Font *f,
+	int x, int y)
+{
+	y -= f->w * strlen(s);
+	ffdraw_str_left(can, col, s, f, x, y);
+}
+
+void
+ffdraw_fill(Canvas *can, Color *col)
+{
+	int x, y;
+
+	x = can->x;	can->x = 0;
+	y = can->y;	can->y = 0;
+
 	ffdraw_rectangle(can, col, 0, 0, can->h - 1, can->w - 1);
+
+	can->x = x;
+	can->y = y;
 }

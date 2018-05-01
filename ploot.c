@@ -17,7 +17,7 @@
 char *argv0;
 
 /*
-** Add `val' at the current position `pos' of the `ring' buffer and set pos to
+** Add 'val' at the current position 'pos' of the 'ring' buffer and set pos to
 ** the next postion.
 */
 #define RING_ADD(rbuf, len, pos, val)					\
@@ -27,8 +27,8 @@ do {									\
 } while (0)
 
 /*
-** Copy the ring buffer `rbuf' content with current position `pos' into the
-** buffer `buf'.  Both buffer of length `len'.
+** Copy the ring buffer 'rbuf' content with current position 'pos' into the
+** buffer 'buf'.  Both buffer of length 'len'.
 */
 #define RING_COPY(buf, rbuf, len, pos)					\
 do {									\
@@ -44,7 +44,7 @@ char	*tflag = NULL;
 time_t	oflag = 0;
 
 /*
-** Set `str' to a human-readable form of `num' with always a width of 7 (+ 1
+** Set 'str' to a human-readable form of 'num' with always a width of 7 (+ 1
 ** the '\0' terminator).  Buffer overflow is ensured not to happen due to the
 ** max size of a double.
 */
@@ -67,7 +67,7 @@ humanize(char *str, double val)
 }
 
 /*
-** Returns the maximal double of values between `beg' and `end'.
+** Returns the maximal double of values between 'beg' and 'end'.
 */
 double
 maxdv(double *beg, double *end)
@@ -83,7 +83,7 @@ maxdv(double *beg, double *end)
 }
 
 /*
-** If not null, print the title `str' centered on width.
+** If not null, print the title 'str' centered on width.
 */
 void
 title(char *str, int width)
@@ -95,7 +95,7 @@ title(char *str, int width)
 
 /*
 ** Print vertical axis with humanized number from time to time, with occurences
-** determined after the position on the vertical axis from the bottom `pos'.
+** determined after the position on the vertical axis from the bottom 'pos'.
 */
 void
 vaxis(double val, int pos)
@@ -111,7 +111,7 @@ vaxis(double val, int pos)
 }
 
 /*
-** Print horizontal axis for up to `col' values along with dates if reading time
+** Print horizontal axis for up to 'col' values along with dates if reading time
 ** series.
 */
 void
@@ -152,8 +152,8 @@ line(double *beg, double *end, double top, double bot)
 }
 
 /*
-** Plot values between `beg' and `end' in a plot of height `height'.
-** If `str' is not NULL, it is set as a title above the graph.
+** Plot values between 'beg' and 'end' in a plot of height 'height'.
+** If 'str' is not NULL, it is set as a title above the graph.
 */
 void
 plot(double *beg, double *end, int height, char *str, time_t start)
@@ -181,8 +181,8 @@ plot(double *beg, double *end, int height, char *str, time_t start)
 }
 
 /*
-** Read a simple format with one double per line and save the last `MAX_WIDTH'
-** values into `buf' which must be at least MAX_VAL wide and return a pointer
+** Read a simple format with one double per line and save the last 'MAX_WIDTH'
+** values into 'buf' which must be at least MAX_VAL wide and return a pointer
 ** to the last element or NULL if the input contains error.
 */
 double *
@@ -203,8 +203,8 @@ read_simple(double buf[MAX_VAL])
 
 /*
 ** Read a format with blank separated time_t-double pairs, one per line and save
-** the last `MAX_WIDTH' values into `tbuf' and `vbuf' which must both be at
-** least MAX_VAL wide and return a pointer to the last element of `vbuf' or
+** the last 'MAX_WIDTH' values into 'tbuf' and 'vbuf' which must both be at
+** least MAX_VAL wide and return a pointer to the last element of 'vbuf' or
 ** NULL if the input contains error.
 */
 time_t *
@@ -229,8 +229,8 @@ read_time_series(double *vbuf, time_t *tbuf)
 }
 
 /*
-** Walk from `tbeg' and `tend' and add offset in `tbuf' every time there is no
-** value in `step' amount of time, by setting a value to -1.
+** Walk from 'tbeg' and 'tend' and add offset in 'tbuf' every time there is no
+** value in 'step' amount of time, by setting a value to -1.
 */
 double *
 skip_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
@@ -246,7 +246,7 @@ skip_gaps(time_t *tbeg, time_t *tend, double *vbuf, time_t step)
 		toff += *tp % step;
 	toff = *tbeg + toff / (tend - tbeg) + step / 2;
 
-	/* Fill `vbuf' with gap added at each time gap using vrbuf as
+	/* Fill 'vbuf' with gap added at each time gap using vrbuf as
 	** intermediate ring buffer. */
 	len = LEN(vrbuf);
 	for (p = pos = 0, tp = tbeg, vp = vbuf; tp < tend; p++, vp++, tp++) {
