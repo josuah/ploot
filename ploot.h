@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stdint.h>
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -21,10 +22,9 @@ typedef struct {
 
 typedef struct {
 	Color col;	/* for drawing the curve and the legend */
-/*	time_t *t;	/ * array of timestamps */
+	time_t *t;	/* array of timestamps */
 	double *v;	/* array of values */
 	int n;		/* number of values */
-	time_t step;
 	char *name;	/* for the legend */
 } Vlist;
 
@@ -37,3 +37,8 @@ void		 ffdraw_str_left(Canvas *, Color *, char *, Font *, int, int);
 void		 ffdraw_str_center(Canvas *, Color *, char *, Font *, int, int);
 void		 ffdraw_str_right(Canvas *, Color *, char *, Font *, int, int);
 void		 ffdraw_fill	(Canvas *, Color *);
+void		 ffdraw_print	(Canvas *);
+
+/* ffplot.c */
+void		 ffdraw		(char *, char *, Vlist *, int, double, double,
+				 double, time_t, time_t, time_t);

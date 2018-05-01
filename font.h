@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "ffdraw.h"
+
+#include "ploot.h"
 
 /*
  * Macros to make the fonts header file more readable.

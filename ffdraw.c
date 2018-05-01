@@ -6,11 +6,14 @@
  * - (0,1) is above it.                                      +--x
  */
 
+#include <arpa/inet.h>
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-#include "ffdraw.h"
+#include "ploot.h"
 
 /*
  * Convert (x,y) coordinates to (row,col) for printing into the buffer.
@@ -143,4 +146,18 @@ ffdraw_fill(Canvas *can, Color *col)
 
 	can->x = x;
 	can->y = y;
+}
+
+void
+ffdraw_print(Canvas *can)
+{
+	uint32_t w, h;
+
+	w = htonl(can->w);
+	h = htonl(can->h);
+
+	fputs("farbfeld", stdout);
+	fwrite(&w, sizeof(w), 1, stdout);
+	fwrite(&h, sizeof(h), 1, stdout);
+	fwrite(can->b, can->w * can->h, sizeof(*can->b), stdout);
 }
