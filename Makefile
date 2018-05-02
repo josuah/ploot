@@ -1,7 +1,7 @@
 CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -static
 
-SRC = main.c ffplot.c ffdraw.c font_14x7.c
+SRC = ploot.c ffplot.c ffdraw.c font_14x7.c
 OBJ = $(SRC:.c=.o)
 LIB = -lm
 

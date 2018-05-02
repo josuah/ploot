@@ -18,6 +18,7 @@
 #include "font_14x7.h"
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
+#define LEN(x) (sizeof(x) / sizeof(*x))
 
 #define MARGIN 4
 
@@ -42,7 +43,7 @@
 #define PLOT_X (YLABEL_H)
 #define PLOT_Y (XLABEL_W)
 #define PLOT_W 700
-#define PLOT_H 200
+#define PLOT_H 160
 
 #define LEGEND_X (YLABEL_H)
 #define LEGEND_Y (IMAGE_W - LEGEND_W)
@@ -198,9 +199,60 @@ legend(Canvas *can, Color *label_fg, Vlist *v, int n)
 }
 
 void
-ffdraw(char *name, char *units, Vlist *v, int n,
-	double vmin, double vmax, double vstep,
-	time_t tmin, time_t tmax, time_t tstep)
+find_scales(Vlist *v, int n,
+	double *vmin, double *vmax, double *vstep,
+	time_t *tmin, time_t *tmax, time_t *tstep)
+{
+	double dv, *vs, vscale[] = { 5, 2, 1 };
+        time_t dt, *ts, tscale[] = {
+		3600*24*30, 3600*24*5, 3600*24*2, 3600*24, 3600*18, 3600*10, 
+		3600*5, 3600*2, 3600, 60*30, 60*20, 60*10, 60*5, 60*2, 60, 30, 
+		20, 10, 5, 2, 1
+	};
+	int i;
+
+	*vmin = *vmax = *tmin = *tmax = 0;
+
+	for (; n-- > 0; v++) {
+		for (i = 0; i < v->n; i++) {
+			if (v->v[i] < *vmin)
+				*vmin = v->v[i];
+			if (v->v[i] > *vmax)
+				*vmax = v->v[i];
+			if (v->t[i] < *tmin)
+				*tmin = v->t[i];
+			if (v->t[i] > *tmax)
+				*tmax = v->t[i];
+		}
+	}
+
+	dv = *vmax - *vmin;
+	dt = *tmax - *tmin;
+
+	for (ts = tscale; ts < tscale + LEN(tscale); ts++) {
+		if (dt > *ts * 5) {
+			*tstep = *ts;
+			break;
+		}
+	}
+
+	for (i = 1; i != 0; i *= 10) {
+		for (vs = vscale; vs < vscale + LEN(vscale); vs++) {
+			if (dv > *vs * i * 1) {
+				*vstep = *vs * i * 10;
+				i = 0;
+				break;
+			}
+		}
+	}
+}
+
+/*
+ * Plot the 'n' values list of the 'v' array with title 'name' and
+ * 'units' label.
+ */
+void
+ffplot(Vlist *v, int n, char *name, char *units)
 {
 	Canvas can = { IMAGE_W, IMAGE_H, buffer, 0, 0 };
 	Color plot_bg	= { 0x2222, 0x2222, 0x2222, 0xffff };
@@ -208,6 +260,12 @@ ffdraw(char *name, char *units, Vlist *v, int n,
 	Color grid_fg	= { 0x3737, 0x3737, 0x3737, 0xffff };
 	Color label_fg	= { 0x8888, 0x8888, 0x8888, 0xffff };
 	Color title_fg	= { 0xdddd, 0xdddd, 0xdddd, 0xffff };
+	double vmin, vmax, vstep = 30;
+	time_t tmin, tmax, tstep = 30;
+
+	find_scales(v, n, &vmin, &vmax, &vstep, &tmin, &tmax, &tstep);
+
+	fprintf(stderr, "%f %f  %lld %lld\n", vmin, vmax, tmin, tmax);
 
 	can.x = 0;
 	can.y = 0;

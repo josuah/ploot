@@ -45,8 +45,7 @@ void		 ffdraw_fill	(Canvas *, Color *);
 void		 ffdraw_print	(Canvas *);
 
 /* ffplot.c */
-void		 ffdraw		(char *, char *, Vlist *, int, double, double,
-				 double, time_t, time_t, time_t);
+void		 ffplot		(Vlist *, int, char *, char *);
 
 /* util.c */
 char		*strsep		(char **, const char *);
