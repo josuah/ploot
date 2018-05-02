@@ -159,7 +159,7 @@ graph(Canvas *can, Vlist *v,
 	int x, y, n, xlast, ylast, first;
 
 	first = 1;
-	for (tp = v->t, vp = v->v, n = v->n; n-- > 0; n--, vp++, tp++) {
+	for (tp = v->t, vp = v->v, n = v->n; n > 0; n--, vp++, tp++) {
 		x = v2x(*vp, vmin, vmax);
 		y = t2y(*tp, tmin, tmax);
 

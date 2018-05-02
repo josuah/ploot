@@ -66,6 +66,17 @@ read_labels(Vlist *v, char **argv, char *buf)
 		fputs("more columns than arguments\n", stderr), exit(1);
 }
 
+double
+eatof(char *str)
+{
+	char *s;
+
+	for (s = str; *s != '\0'; s++)
+		if (!isdigit(*s) && *s != '.')
+			fputs("invalid floatrformat", stderr), exit(0);
+	return atof(str);
+}
+
 long
 eatol(char *str)
 {
@@ -78,22 +89,25 @@ eatol(char *str)
 }
 
 void
-add_value(Vlist *v, int *bufsiz, int nval, char *field)
+add_val(Vlist *v, int *bufsiz, int nval, double field, time_t epoch)
 {
 	if (nval >= *bufsiz) {
 		*bufsiz = *bufsiz * 2 + 1;
-		if ((v->v = realloc(v->v, *bufsiz)) == NULL)
+		if ((v->v = realloc(v->v, *bufsiz * sizeof(*v->v))) == NULL)
+			perror("reallocating values buffer"), exit(1);
+		if ((v->t = realloc(v->t, *bufsiz * sizeof(*v->t))) == NULL)
 			perror("reallocating values buffer"), exit(1);
 	}
-	v->v[nval] = eatol(field);
-	v->n = nval;
+	v->v[nval] = field;
+	v->t[nval] = epoch;
+	v->n = nval + 1;
 }
 
 /*
  * Add to each column the value on the current row.
  */
 void
-add_each_value(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
+add_row(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 {
 	time_t epoch;
 	int n;
@@ -103,11 +117,10 @@ add_each_value(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 		fprintf(stderr, "%d: missing epoch\n", nval), exit(0);
 
 	epoch = eatol(field);
-
 	for (n = 0; (field = strsep(&line, ",")) != NULL; n++, v++) {
 		if (n > ncol)
 			fprintf(stderr, "%d: too many fields\n", nval), exit(0);
-		add_value(v, bufsiz, nval, field);
+		add_val(v, bufsiz, nval, eatof(field), epoch);
 	}
 	if (n < ncol)
 		fprintf(stderr, "%d: too few fields\n", nval), exit(0);
@@ -128,9 +141,8 @@ read_values(Vlist *v, int ncol)
 	bufsiz = 0;
 	for (nval = 0; fgets(line, sizeof(line), stdin); nval++) {
 		estriplf(line);
-		add_each_value(v, &bufsiz, ncol, nval, line);
+		add_row(v, &bufsiz, ncol, nval, line);
 	}
-	fprintf(stderr, "nval: %d, bufsiz: %d\n", nval, bufsiz), fflush(stderr);
 }
 
 static void
