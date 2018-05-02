@@ -196,7 +196,7 @@ legend(Canvas *can, Color *label_fg, Vlist *v, int n)
 	int i, x, y;
 
 	for (i = 0; i < n; i++, v++) {
-		x = LEGEND_H - n * (FONT_H + MARGIN) - FONT_H / 2;
+		x = LEGEND_H - i * (FONT_H + MARGIN) - FONT_H / 2;
 
 		y = MARGIN + FONT_W;
 		ffdraw_str_left(can, &v->col, "\1", font, x, y);
@@ -246,22 +246,20 @@ find_scales(Vlist *v, int n,
 		}
 	}
 
-	for (i = 1; i != 0; i *= 10) {
-		for (vs = vscale + LEN(vscale) - 1; vs >= vscale; vs--) {
-			if (dv > *vs / i * XDENSITY / 2) {
-				*vstep = *vs / i;
-				i = 0;
-				break;
+	if (dv > 1) for (i = 1; i != 0; i *= 10) {
+		for (vs = vscale; vs < vscale + LEN(vscale); vs++) {
+			if (dv < *vs * i * XDENSITY) {
+				*vstep = *vs * i;
+				return;
 			}
 		}
 	}
 
 	for (i = 1; i != 0; i *= 10) {
-		for (vs = vscale; vs < vscale + LEN(vscale); vs++) {
-			if (dv < *vs * i * XDENSITY) {
-				*vstep = *vs * i;
-				i = 0;
-				break;
+		for (vs = vscale + LEN(vscale) - 1; vs >= vscale; vs--) {
+			if (dv > *vs / i * XDENSITY / 2) {
+				*vstep = *vs / i;
+				return;
 			}
 		}
 	}

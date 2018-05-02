@@ -88,29 +88,31 @@ eatol(char *str)
 	return atol(str);
 }
 
-static void
-add_val(Vlist *v, int *bufsiz, int nval, double field, time_t epoch)
+static int
+add_val(Vlist *v, int bufsize, int nval, double field, time_t epoch)
 {
-	if (nval >= *bufsiz) {
-		*bufsiz = *bufsiz * 2 + 1;
-		if ((v->v = realloc(v->v, *bufsiz * sizeof(*v->v))) == NULL)
+	if (nval >= bufsize) {
+		bufsize = bufsize * 2 + 1;
+		if ((v->v = realloc(v->v, bufsize * sizeof(*v->v))) == NULL)
 			perror("reallocating values buffer"), exit(1);
-		if ((v->t = realloc(v->t, *bufsiz * sizeof(*v->t))) == NULL)
+		if ((v->t = realloc(v->t, bufsize * sizeof(*v->t))) == NULL)
 			perror("reallocating values buffer"), exit(1);
 	}
 	v->v[nval] = field;
 	v->t[nval] = epoch;
 	v->n = nval + 1;
+
+	return bufsize;
 }
 
 /*
  * Add to each column the value on the current row.
  */
-static void
-add_row(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
+static int
+add_row(Vlist *v, int bufsize, int ncol, int nval, char *line)
 {
 	time_t epoch;
-	int n;
+	int bs;
 	char *field, *dot;
 
 	if ((field = strsep(&line, ",")) == NULL)
@@ -119,13 +121,15 @@ add_row(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 	if ((dot = strchr(field, '.')) != NULL)
 		*dot = '\0';
 	epoch = eatol(field);
-	for (n = 0; (field = strsep(&line, ",")) != NULL; n++, v++) {
-		if (n > ncol)
+	for (; (field = strsep(&line, ",")) != NULL; ncol--, v++) {
+		if (ncol <= 0)
 			fprintf(stderr, "%d: too many fields\n", nval), exit(0);
-		add_val(v, bufsiz, nval, eatof(field), epoch);
+		bs = add_val(v, bufsize, nval, eatof(field), epoch);
 	}
-	if (n < ncol)
+	if (ncol > 0)
 		fprintf(stderr, "%d: too few fields\n", nval), exit(0);
+
+	return bs;
 }
 
 /*
@@ -137,13 +141,13 @@ add_row(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 static void
 read_values(Vlist *v, int ncol)
 {
-	int nval, bufsiz;
+	int nval, bufsize;
 	char line[LINE_MAX];
 
-	bufsiz = 0;
+	bufsize = 0;
 	for (nval = 0; fgets(line, sizeof(line), stdin); nval++) {
 		estriplf(line);
-		add_row(v, &bufsiz, ncol, nval, line);
+		bufsize = add_row(v, bufsize, ncol, nval, line);
 	}
 }
 
@@ -152,10 +156,11 @@ usage(void)
 {
 	ColorList *c;
 
-	fprintf(stderr, "usage: %s [-t title] [-u unit] color...\n"
-		"available colors as defined by \"config.h\":\n", argv0);
-	for (c = colorlist; c->name != NULL; c++)
-		fprintf(stderr, "- %s\n", c->name);
+	fprintf(stderr, "usage: %s [-t title] [-u unit] {", argv0);
+	fputs(colorlist->name, stderr);
+	for (c = colorlist + 1; c->name != NULL; c++)
+		fprintf(stderr, ",%s", c->name);
+	fputs("}...\n", stderr);
 	exit(1);
 }
 
@@ -172,6 +177,8 @@ main(int argc, char **argv)
 	case 'u':
 		uflag = EARGF(usage());
 		break;
+	default:
+		usage();
 	} ARGEND;
 
 	if ((v = calloc(argc, sizeof(*v))) == NULL)
