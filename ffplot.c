@@ -220,7 +220,8 @@ find_scales(Vlist *v, int n,
 	};
 	int i;
 
-	*vmin = *vmax = *tmin = *tmax = 0;
+	*vmin = *vmax = 0;
+	*tmin = *tmax = *v->t;
 
 	for (; n-- > 0; v++) {
 		for (i = 0; i < v->n; i++) {
@@ -283,8 +284,6 @@ ffplot(Vlist *v, int n, char *name, char *units)
 	time_t tmin, tmax, tstep = 30;
 
 	find_scales(v, n, &vmin, &vmax, &vstep, &tmin, &tmax, &tstep);
-
-	fprintf(stderr, "%f %f  %lld %lld\n", vmin, vmax, tmin, tmax);
 
 	can.x = 0;
 	can.y = 0;

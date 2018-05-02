@@ -73,7 +73,7 @@ eatof(char *str)
 
 	for (s = str; *s != '\0'; s++)
 		if (!isdigit(*s) && *s != '-' && *s != '.')
-			fputs("invalid floatrformat", stderr), exit(0);
+			fputs("invalid float format\n", stderr), exit(0);
 	return atof(str);
 }
 
@@ -84,7 +84,7 @@ eatol(char *str)
 
 	for (s = str; *s != '\0'; s++)
 		if (!isdigit(*s) && *s != '-')
-			fputs("invalid number format", stderr), exit(0);
+			fputs("invalid number format\n", stderr), exit(0);
 	return atol(str);
 }
 
@@ -111,11 +111,13 @@ add_row(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 {
 	time_t epoch;
 	int n;
-	char *field;
+	char *field, *dot;
 
 	if ((field = strsep(&line, ",")) == NULL)
 		fprintf(stderr, "%d: missing epoch\n", nval), exit(0);
 
+	if ((dot = strchr(field, '.')) != NULL)
+		*dot = '\0';
 	epoch = eatol(field);
 	for (n = 0; (field = strsep(&line, ",")) != NULL; n++, v++) {
 		if (n > ncol)
