@@ -78,14 +78,15 @@ eatol(char *str)
 }
 
 void
-add_value(double **v, int *bufsiz, int nval, char *field)
+add_value(Vlist *v, int *bufsiz, int nval, char *field)
 {
 	if (nval >= *bufsiz) {
-		*bufsiz *= 2;
-		if ((*v = realloc(*v, *bufsiz)) == NULL)
+		*bufsiz = *bufsiz * 2 + 1;
+		if ((v->v = realloc(v->v, *bufsiz)) == NULL)
 			perror("reallocating values buffer"), exit(1);
 	}
-	(*v)[nval] = eatol(field);
+	v->v[nval] = eatol(field);
+	v->n = nval;
 }
 
 /*
@@ -106,7 +107,7 @@ add_each_value(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 	for (n = 0; (field = strsep(&line, ",")) != NULL; n++, v++) {
 		if (n > ncol)
 			fprintf(stderr, "%d: too many fields\n", nval), exit(0);
-		add_value(&v->v, bufsiz, nval, field);
+		add_value(v, bufsiz, nval, field);
 	}
 	if (n < ncol)
 		fprintf(stderr, "%d: too few fields\n", nval), exit(0);
@@ -121,15 +122,15 @@ add_each_value(Vlist *v, int *bufsiz, int ncol, int nval, char *line)
 void
 read_values(Vlist *v, int ncol)
 {
-	int n, nval, bufsiz;
+	int nval, bufsiz;
 	char line[LINE_MAX];
 
+	bufsiz = 0;
 	for (nval = 0; fgets(line, sizeof(line), stdin); nval++) {
 		estriplf(line);
 		add_each_value(v, &bufsiz, ncol, nval, line);
 	}
-	for (n = 0; n < ncol; n++, v++)
-		v->n = nval;
+	fprintf(stderr, "nval: %d, bufsiz: %d\n", nval, bufsiz), fflush(stderr);
 }
 
 static void
