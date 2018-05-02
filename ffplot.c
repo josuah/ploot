@@ -239,27 +239,28 @@ find_scales(Vlist *v, int n,
 	dv = *vmax - *vmin;
 	dt = *tmax - *tmin;
 
-	for (ts = tscale; ts < tscale + LEN(tscale); ts++) {
+	for (ts = tscale; ts < tscale + LEN(tscale); ts++)
 		if (dt < *ts * YDENSITY) {
 			*tstep = *ts;
 			break;
 		}
-	}
 
-	if (dv > 1) for (i = 1; i != 0; i *= 10) {
-		for (vs = vscale; vs < vscale + LEN(vscale); vs++) {
-			if (dv < *vs * i * XDENSITY) {
-				*vstep = *vs * i;
-				return;
+	if (dv > 1) {
+		for (i = 1; i != 0; i *= 10) {
+			for (vs = vscale; vs < vscale + LEN(vscale); vs++) {
+				if (dv < *vs * i * XDENSITY) {
+					*vstep = *vs * i;
+					return;
+				}
 			}
 		}
-	}
-
-	for (i = 1; i != 0; i *= 10) {
-		for (vs = vscale + LEN(vscale) - 1; vs >= vscale; vs--) {
-			if (dv > *vs / i * XDENSITY / 2) {
-				*vstep = *vs / i;
-				return;
+	} else {
+		for (i = 1; i != 0; i *= 10) {
+			for (vs = vscale + LEN(vscale) - 1; vs >= vscale; vs--) {
+				if (dv > *vs / i * XDENSITY / 2) {
+					*vstep = *vs / i;
+					return;
+				}
 			}
 		}
 	}
