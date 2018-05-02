@@ -125,9 +125,14 @@ yaxis(Canvas *can, Color *label, Color *grid,
 {
 	time_t t;
 	int y;
-	char str[sizeof(" YYYY/MM/DD ")], *fmt;
+	char str[sizeof("MM/DD HH/MM")], *fmt;
 
-	fmt = (tstep < 3600 * 12) ? " %H:%M:%S " : " %Y/%m/%d ";
+	if (tstep < 3600 * 12)
+		fmt = "%H:%M:%S";
+	else if (tstep < 3600 * 24)
+		fmt = "%m/%d %H:%M";
+	else
+		fmt = "%Y/%m/%d";
 
 	for (t = tmax - tmax % tstep; t >= tmin; t -= tstep) {
 		y = t2y(t, tmin, tmax);
@@ -210,7 +215,8 @@ find_scales(Vlist *v, int n,
         time_t dt, *ts, tscale[] = {
 		1, 5, 2, 10, 20, 30, 60, 60*2, 60*5, 60*10, 60*20, 60*30, 3600, 
 		3600*2, 3600*5, 3600*10, 3600*18, 3600*24, 3600*24*2, 
-		3600*24*5, 3600*24*30
+		3600*24*5, 3600*24*10, 3600*24*20, 3600*24*30, 3600*24*50,
+		3600*24*100, 3600*24*365
 	};
 	int i;
 
@@ -236,6 +242,16 @@ find_scales(Vlist *v, int n,
 		if (dt < *ts * YDENSITY) {
 			*tstep = *ts;
 			break;
+		}
+	}
+
+	for (i = 1; i != 0; i *= 10) {
+		for (vs = vscale + LEN(vscale) - 1; vs >= vscale; vs--) {
+			if (dv > *vs / i * XDENSITY / 2) {
+				*vstep = *vs / i;
+				i = 0;
+				break;
+			}
 		}
 	}
 
