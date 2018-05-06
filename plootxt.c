@@ -29,11 +29,9 @@ plot_dot(long *out, int row, int col)
 		{ 0x02, 0x10 },
 		{ 0x04, 0x20 },
 		{ 0x40, 0x80 },
-	}, f;
+	};
 
-	f = flags[row][col];
-	puts("."), fflush(stdout);
-	*out |= f;
+	*out |= flags[row][col];;
 }
 
 static void
