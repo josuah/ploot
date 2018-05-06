@@ -8,6 +8,7 @@
 
 #include "arg.h"
 #include "ploot.h"
+#include "util.h"
 #include "config.h"	/* after ploot.h for type definitions */
 
 #define LEN(x) (sizeof(x) / sizeof(*x))
@@ -32,26 +33,10 @@ color(Color *col, char *name)
 }
 
 static void
-estriplf(char *line)
-{
-	char *lf;
-
-	if ((lf = strchr(line, '\n')) == NULL || lf[1] != '\0')
-		fputs("invalid input\n", stderr), exit(1);
-	*lf = '\0';
-}
-
-static void
 read_labels(Vlist *v, char **argv, char *buf)
 {
-	if (fgets(buf, LINE_MAX, stdin) == NULL) {
-		if (ferror(stdin))
-			perror("fread from stdin");
-		else
-			fputs("missing label line\n", stderr);
-		exit(1);
-	}
-	estriplf(buf);
+	if (esfgets(buf, LINE_MAX, stdin) == NULL)
+		fputs("missing label line\n", stderr), exit(1);
 
 	if (strcmp(strsep(&buf, ","), "epoch") != 0)
 		fputs("first label must be \"epoch\"\n", stderr), exit(1);
@@ -64,28 +49,6 @@ read_labels(Vlist *v, char **argv, char *buf)
 
 	if (strsep(&buf, ",") != NULL)
 		fputs("more columns than arguments\n", stderr), exit(1);
-}
-
-static double
-eatof(char *str)
-{
-	char *s;
-
-	for (s = str; *s != '\0'; s++)
-		if (!isdigit(*s) && *s != '-' && *s != '.')
-			fputs("invalid float format\n", stderr), exit(0);
-	return atof(str);
-}
-
-static long
-eatol(char *str)
-{
-	char *s;
-
-	for (s = str; *s != '\0'; s++)
-		if (!isdigit(*s) && *s != '-')
-			fputs("invalid number format\n", stderr), exit(0);
-	return atol(str);
 }
 
 static int
@@ -145,10 +108,8 @@ read_values(Vlist *v, int ncol)
 	char line[LINE_MAX];
 
 	bufsize = 0;
-	for (nval = 0; fgets(line, sizeof(line), stdin); nval++) {
-		estriplf(line);
+	for (nval = 0; esfgets(line, sizeof(line), stdin) != NULL; nval++)
 		bufsize = add_row(v, bufsize, ncol, nval, line);
-	}
 }
 
 static void

@@ -1,22 +1,31 @@
 CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -static
 
-SRC = ploot.c ffplot.c ffdraw.c font_14x7.c
-OBJ = $(SRC:.c=.o)
+PLOOT_SRC = ploot.c ffplot.c ffdraw.c font_14x7.c util.c
+PLOOT_OBJ = $(PLOOT_SRC:.c=.o)
+
+PLOOTXT_SRC = plootxt.c util.c
+PLOOTXT_OBJ = $(PLOOTXT_SRC:.c=.o)
+
 LIB = -lm
 
-all:x ploot
+all:V ploot plootxt
 
-ploot: $(OBJ)
-	${CC} $(LDFLAGS) -o $@ $(OBJ) $(LIB)
+ploot: $(PLOOT_OBJ)
+	${CC} $(LDFLAGS) -o $@ $(PLOOT_OBJ) $(LIB)
 
-install:x ploot
+plootxt: $(PLOOTXT_OBJ)
+	${CC} $(LDFLAGS) -o $@ $(PLOOTXT_OBJ) $(LIB)
+
+install:V ploot plootxt
 	mkdir -p ${PREFIX}/bin
-	cp ploot ${PREFIX}/bin/ploot
+	cp ploot plootxt ${PREFIX}/bin
 
-clean:x
+clean:V
 	rm -f *.o ploot
 
-x:
+V: # :V acts like .PHONY:
 
-$(SRC): arg.h ploot.h font.h font_14x7.h
+$(PLOOT_SRC) $(PLOOTXT_SRC): \
+arg.h ploot.h util.h font.h font_14x7.h
+
