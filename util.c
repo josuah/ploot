@@ -42,7 +42,7 @@ eatof(char *str)
 
 	for (s = str; *s != '\0'; s++)
 		if (!isdigit(*s) && *s != '-' && *s != '.')
-			fputs("invalid float format\n", stderr), exit(0);
+			fputs("invalid float format\n", stderr), exit(1);
 	return atof(str);
 }
 
@@ -53,7 +53,7 @@ eatol(char *str)
 
 	for (s = str; *s != '\0'; s++)
 		if (!isdigit(*s) && *s != '-')
-			fputs("invalid number format\n", stderr), exit(0);
+			fputs("invalid number format\n", stderr), exit(1);
 	return atol(str);
 }
 

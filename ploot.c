@@ -79,18 +79,18 @@ add_row(Vlist *v, int bufsize, int ncol, int nval, char *line)
 	char *field, *dot;
 
 	if ((field = strsep(&line, ",")) == NULL)
-		fprintf(stderr, "%d: missing epoch\n", nval), exit(0);
+		fprintf(stderr, "%d: missing epoch\n", nval), exit(1);
 
 	if ((dot = strchr(field, '.')) != NULL)
 		*dot = '\0';
 	epoch = eatol(field);
 	for (; (field = strsep(&line, ",")) != NULL; ncol--, v++) {
 		if (ncol <= 0)
-			fprintf(stderr, "%d: too many fields\n", nval), exit(0);
+			fprintf(stderr, "%d: too many fields\n", nval), exit(1);
 		bs = add_val(v, bufsize, nval, eatof(field), epoch);
 	}
 	if (ncol > 0)
-		fprintf(stderr, "%d: too few fields\n", nval), exit(0);
+		fprintf(stderr, "%d: too few fields\n", nval), exit(1);
 
 	return bs;
 }

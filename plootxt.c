@@ -232,7 +232,7 @@ main(int argc, char **argv)
 	nmax = parse_args(argc, argv, max);
 	ncol = read_labels(labels);
 	if (ncol != nmax)
-		fputs("not as many labels and arguments\n", stderr), exit(0);
+		fputs("not as many labels and arguments\n", stderr), exit(1);
 	plot(labels, max, ncol);
 
 	return 0;
