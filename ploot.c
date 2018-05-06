@@ -110,6 +110,8 @@ read_values(Vlist *v, int ncol)
 	bufsize = 0;
 	for (nval = 0; esfgets(line, sizeof(line), stdin) != NULL; nval++)
 		bufsize = add_row(v, bufsize, ncol, nval, line);
+	if (nval == 0)
+		fputs("no value could be read\n", stderr), exit(1);
 }
 
 static void

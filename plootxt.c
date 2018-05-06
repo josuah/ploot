@@ -12,72 +12,46 @@
 #define LEN(x) (sizeof(x) / sizeof(*x))
 
 #define WIDTH_MAX 1024
+#define BRAILLE_START	10240
 
-int screenwidth = 80;
+int wflag = 80;
 
 char *argv0;
 
-static void
-usage(void)
-{
-	fprintf(stderr, "usage: %s <csv\n", argv0);
-	exit(1);
-}
-
-void
-fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
-{
-	int i, w;
-
-	w = screenwidth / ncol;
-	for (i = 0; i < ncol; labels++, i++)
-		out += snprintf(out, w - 1, " %.*s", w - 1, *labels);
-}
-
 /*
- * Label must be able to store all pointers to token buf has to
- * offer: sizeof(*buf / 2).
+ * Turn the bit at position (row, col) on in the .
  */
-static int
-read_labels(char out[LINE_MAX])
+static void
+plot_dot(long *out, int row, int col)
 {
-	int ncol;
-	char *l, line[LINE_MAX], *labels[LINE_MAX / 2], *tok;
+	long flags[4][2] = {
+		{ 0x01, 0x08 },
+		{ 0x02, 0x10 },
+		{ 0x04, 0x20 },
+		{ 0x40, 0x80 },
+	}, f;
 
-	l = line;
-	if (esfgets(line, LINE_MAX, stdin) == NULL)
-		fputs("missing label line\n", stderr), exit(1);
-
-	if (strcmp(strsep(&l, ","), "epoch") != 0)
-		fputs("first label must be \"epoch\"\n", stderr), exit(1);
-
-	for (ncol = 1; (tok = strsep(&l, ",")) != NULL; ncol++)
-		*labels = tok;
-	*labels = NULL;
-
-	if (ncol < 2)
-		fputs("no label found\n", stderr), exit(1);
-
-	fmt_labels(out, ncol, labels);
-
-	return ncol;
+	f = flags[row][col];
+	puts("."), fflush(stdout);
+	*out |= f;
 }
 
-void
-plot_val(char *out, double val, int nrow, int width)
+static void
+plot_val(long *out, double val, double max, int row, int width)
 {
-	(void)val;
-	(void)out;
-	(void)nrow;
-	(void)width;
+	int col;
+
+	col = (int)((double)(val * width * 2) / max);
+	for (; col > 0; out++, col--)
+		plot_dot(out + col / 2, row, col % 2);
 }
 
 /*
  * Change the braille characters on a whole row, this for all the
  * values line.
  */
-time_t
-plot_row(char *out, char *line, int nrow, int ncol, int width)
+static time_t
+plot_row(long *out, char *line, double *max, int nrow, int ncol, int width)
 {
 	time_t epoch;
 	double val;
@@ -88,11 +62,11 @@ plot_row(char *out, char *line, int nrow, int ncol, int width)
 		fputs("*** missing epoch value\n", stderr), exit(1);
 	epoch = eatol(tok);
 
-	for (n = 1; (tok = strsep(&line, ",")) != NULL; n++) {
+	for (n = 0; (tok = strsep(&line, ",")) != NULL; n++) {
 		if (n >= ncol)
 			fputs("too many values\n", stderr), exit(1);
 		val = eatof(tok);
-		plot_val(out + n * width, nrow, val, width);
+		plot_val(out + n * width, max[n - 1], nrow, val, width);
 	}
 	if (n < ncol)
 		fputs("not enough values\n", stderr), exit(1);
@@ -103,23 +77,27 @@ plot_row(char *out, char *line, int nrow, int ncol, int width)
 /*
  * Read enough input in order to print one line and plot it into 'out'.
  */
-time_t
-plot_line(char *out, int ncol, int width)
+static time_t
+plot_line(long *out, double *max, int ncol, int width)
 {
 	time_t epoch;
-	int nrow;
+	int n, nrow;
+	long *o, rune;
 	char line[LINE_MAX];
 
+	for (rune = BRAILLE_START, o = out, n = ncol * width; n > 0; o++, n--)
+		memcpy(o, &rune, sizeof(rune));
+	*o = '\0';
 	for (nrow = 0; nrow < 4; nrow++) {
 		if ((esfgets(line, LINE_MAX, stdin)) == NULL)
 			exit(0);
-		epoch = plot_row(out, line, nrow, ncol, width);
+		epoch = plot_row(out, line, max, nrow, ncol, width);
 	}
 
 	return epoch;
 }
 
-void
+static void
 put_time(time_t epoch, time_t last, int nline)
 {
 	char *out, buf[sizeof("XXxXXxXX  |")];
@@ -141,48 +119,121 @@ put_time(time_t epoch, time_t last, int nline)
 	fputs(out, stdout);
 }
 
-void
-plot(char labels[LINE_MAX], int ncol)
+static void
+print_utf8_3bytes(long rune)
+{
+	putchar((char)(0xe0 | (0x0f & (rune >> 12))));	/* 1110xxxx */
+	putchar((char)(0x80 | (0x3f & (rune >> 6))));	/* 10xxxxxx */
+	putchar((char)(0x80 | (0x3f & (rune))));	/* 10xxxxxx */
+}
+
+static void
+put_line(long *out)
+{
+	for (; *out != '\0'; out++)
+		print_utf8_3bytes(*out);
+	putchar('|');
+	putchar('\n');
+}
+
+static void
+plot(char labels[LINE_MAX], double *max, int ncol)
 {
 	time_t epoch, last_epoch;
+	long out[WIDTH_MAX + 1];
 	int n, width;
-	char out[WIDTH_MAX * 3 + 1];
 
-	width = screenwidth / ncol;
+	width = (wflag - sizeof("XXxXXxXX _|")) / ncol - sizeof("|");
 	last_epoch = epoch = 0;
 
-	for (n = 0;; n++) {
-		if (n >= 20) {
-			puts(labels);
-			n = 0;
-		}
+	for (n = 0;; n = n == 20 ? 0 : n + 1) {
+		if (n == 0)
+			put_time(0, 0, 2), puts(labels);
 
-		epoch = plot_line(out, ncol, width);
+		epoch = plot_line(out, max, ncol, width);
 		put_time(epoch, last_epoch, n);
 		last_epoch = epoch;
-		puts(out);
+		put_line(out);
 
 		fflush(stdout);
 	}
 }
 
-void
-parse_args(int argc, char **argv)
+static void
+fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 {
+	int i, w;
+
+	w = wflag / ncol;
+	for (i = 0; i < ncol; labels++, i++)
+		out += snprintf(out, w - 1, " %.*s", w - 1, *labels);
+}
+
+/*
+ * Label must be able to store all pointers to token buf has to
+ * offer: sizeof(*buf / 2).
+ */
+static int
+read_labels(char out[LINE_MAX])
+{
+	int ncol;
+	char *l, line[LINE_MAX], **lab, *labels[LINE_MAX / 2], *tok;
+
+	if ((l = esfgets(line, LINE_MAX, stdin)) == NULL)
+		fputs("missing label line\n", stderr), exit(1);
+
+	if (strcmp(strsep(&l, ","), "epoch") != 0)
+		fputs("first label must be \"epoch\"\n", stderr), exit(1);
+
+	lab = labels;
+	for (ncol = 0; (tok = strsep(&l, ",")) != NULL; ncol++, lab++)
+		*lab = tok;
+	*lab = NULL;
+
+	if (ncol < 1)
+		fputs("no label found\n", stderr), exit(1);
+
+	fmt_labels(out, ncol, labels);
+
+	return ncol;
+}
+
+static void
+usage(void)
+{
+	fprintf(stderr, "usage: %s maxval... <csv\n", argv0);
+	exit(1);
+}
+
+static int
+parse_args(int argc, char **argv, double *max)
+{
+	int n;
+
 	argv0 = *argv;
-	if (argc != 1)
+	argv++, argc--;
+
+	if (argc == 0)
 		usage();
+
+	for (n = argc; n > 0; n--, argv++, max++)
+		*max = eatof(*argv);
+
+	return argc;
 }
 
 int
 main(int argc, char **argv)
 {
+	double max[LINE_MAX / 2];
+	int ncol, nmax;
 	char labels[LINE_MAX];
-	int ncol;
 
-	parse_args(argc, argv);
+	nmax = parse_args(argc, argv, max);
 	ncol = read_labels(labels);
-	plot(labels, ncol);
+	if (ncol != nmax)
+		fputs("not as many labels and arguments\n", stderr), exit(0);
+	plot(labels, max, ncol);
 
 	return 0;
 }
