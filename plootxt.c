@@ -200,7 +200,7 @@ fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s maxval... <csv\n", argv0);
+	fprintf(stderr, "usage: [-w width] %s maxval... <csv\n", argv0);
 	exit(1);
 }
 
@@ -209,8 +209,13 @@ parse_args(int argc, char **argv, double *max)
 {
 	int n;
 
-	argv0 = *argv;
-	argv++, argc--;
+	ARGBEGIN {
+	case 'w':
+		wflag = atoi(EARGF(usage()));
+		break;
+	default:
+		usage();
+	} ARGEND;
 
 	if (argc == 0)
 		usage();
