@@ -228,6 +228,7 @@ main(int argc, char **argv)
 	int ncol, nmax;
 	char *labv[LINE_MAX / 2], labels[LINE_MAX];
 
+	setvbuf(stdin, NULL, _IOLBF, 0);
 	nmax = parse_args(argc, argv, max);
 	ncol = read_labels(labv);
 	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");
