@@ -190,11 +190,13 @@ read_labels(char *labv[LINE_MAX])
 static void
 fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 {
-	int i;
+	int i, n;
 
 	printf("%d\n", width);
-	for (i = 0; i < ncol; labels++, i++)
-		out += sprintf(out, "│%-*s", width - 1, *labels);
+	for (i = 0; i < ncol; labels++, i++) {
+		n = LINE_MAX - (width + sizeof("│")) * i;
+		out += snprintf(out, n, "│%-*s", width - 1, *labels);
+	}
 }
 
 static void
