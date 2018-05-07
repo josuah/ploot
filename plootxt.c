@@ -38,12 +38,12 @@ plot_dot(long *out, int row, int col)
 static void
 plot_val(long *out, double val, double max, int row)
 {
-	int col;
+	int col, c;
 
 	val = MIN(max, val);
 	col = (int)(val * (double)(width - 1) / max * 2);
-	for (; col > 0; col--)
-		plot_dot(out + col / 2, row, col % 2);
+	for (c = 0; c < col; c++)
+		plot_dot(out + c / 2, row, c % 2);
 }
 
 /*
@@ -88,6 +88,10 @@ plot_line(long *out, double *max, int ncol)
 	for (rune = BRAILLE_START, o = out, n = ncol * width; n > 0; o++, n--)
 		memcpy(o, &rune, sizeof(rune));
 	*o = '\0';
+	for (rune = 0x2502, o = out, n = 0; n < ncol; o += width, n++)
+		memcpy(o, &rune, sizeof(rune));
+	out++;
+
 	for (nrow = 0; nrow < 4; nrow++) {
 		if ((esfgets(line, LINE_MAX, stdin)) == NULL)
 			exit(0);
@@ -100,19 +104,19 @@ plot_line(long *out, double *max, int ncol)
 static void
 put_time(time_t epoch, time_t last, int nline)
 {
-	char *out, buf[sizeof("XXxXXxXX  |")];
+	char *out, buf[sizeof("XXxXXxXX  ")];
 
 	switch (nline % 3) {
 	case 0:
-		strftime(buf, sizeof(buf), "%H:%M:%S _|", localtime(&epoch));
+		strftime(buf, sizeof(buf), "%H:%M:%S _", localtime(&epoch));
 		out = buf;
 		break;
 	case 1:
-		strftime(buf, sizeof(buf), "%y/%m/%d  |", localtime(&last));
+		strftime(buf, sizeof(buf), "%y/%m/%d  ", localtime(&last));
 		out = buf;
 		break;
 	case 2:
-		out = "          |";
+		out = "          ";
 		break;
 	}
 
@@ -132,7 +136,7 @@ put_line(long *out)
 {
 	for (; *out != '\0'; out++)
 		print_utf8_3bytes(*out);
-	putchar('\n');
+	puts("│");
 }
 
 static void
@@ -146,7 +150,7 @@ plot(char labels[LINE_MAX], double *max, int ncol)
 
 	for (n = 0;; n = n == 25 ? 0 : n + 1) {
 		if (n == 0)
-			put_time(0, 0, 2), puts(labels);
+			put_time(0, 0, 2), fputs(labels, stdout), puts("│");
 
 		epoch = plot_line(out, max, ncol);
 		put_time(epoch, last_epoch, n);
@@ -190,7 +194,7 @@ fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 
 	printf("%d\n", width);
 	for (i = 0; i < ncol; labels++, i++)
-		out += snprintf(out, width + 3, " %-*s |", width - 3, *labels);
+		out += sprintf(out, "│%-*s", width - 1, *labels);
 }
 
 static void
@@ -226,7 +230,7 @@ main(int argc, char **argv)
 
 	nmax = parse_args(argc, argv, max);
 	ncol = read_labels(labv);
-	width = (wflag - sizeof("XXxXXxXX _|")) / ncol - sizeof("|");
+	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");
 	fmt_labels(labels, ncol, labv);
 	if (ncol != nmax)
 		fputs("not as many labels and arguments\n", stderr), exit(1);
