@@ -1,9 +1,6 @@
 #include <time.h>
 #include <stdint.h>
 
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-
 typedef uint16_t Color[4];
 
 typedef struct {

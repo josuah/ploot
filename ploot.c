@@ -11,8 +11,6 @@
 #include "util.h"
 #include "config.h"	/* after ploot.h for type definitions */
 
-#define LEN(x) (sizeof(x) / sizeof(*x))
-
 char *argv0;
 char *tflag = "";
 char *uflag = "";
