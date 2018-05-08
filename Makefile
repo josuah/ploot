@@ -7,6 +7,7 @@ PLOOT_OBJ = $(PLOOT_SRC:.c=.o)
 PLOOTXT_SRC = plootxt.c util.c
 PLOOTXT_OBJ = $(PLOOTXT_SRC:.c=.o)
 
+
 LIB = -lm
 
 all:V ploot plootxt
@@ -22,10 +23,9 @@ install:V ploot plootxt
 	cp ploot plootxt ${PREFIX}/bin
 
 clean:V
-	rm -f *.o ploot
+	rm -f *.o
 
 V: # :V acts like .PHONY:
 
 $(PLOOT_SRC) $(PLOOTXT_SRC): \
 arg.h ploot.h util.h font.h font_14x7.h
-

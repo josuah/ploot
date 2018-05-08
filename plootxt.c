@@ -65,7 +65,7 @@ plot_row(long *out, char *line, double *max, int nrow, int ncol)
 	for (n = 0; (tok = strsep(&line, ",")) != NULL; n++) {
 		if (n >= ncol)
 			fputs("too many values\n", stderr), exit(1);
-		val = eatof(tok);
+		val = atof(tok);
 		plot_val(out + n * width, val, max[n], nrow);
 	}
 	if (n < ncol)
@@ -192,7 +192,6 @@ fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 {
 	int i, n;
 
-	printf("%d\n", width);
 	for (i = 0; i < ncol; labels++, i++) {
 		n = LINE_MAX - (width + sizeof("│")) * i;
 		out += snprintf(out, n, "│%-*s", width - 1, *labels);
@@ -202,7 +201,7 @@ fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: [-w width] %s maxval... <csv\n", argv0);
+	fprintf(stderr, "usage: %s [-w width] maxval... <csv\n", argv0);
 	exit(1);
 }
 
