@@ -1,4 +1,5 @@
-CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -D_POSIX_C_SOURCE=200809L
+CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -fPIC \
+	-D_POSIX_C_SOURCE=200809L
 LDFLAGS = -static
 
 PLOOT_SRC = ploot.c ffplot.c ffdraw.c font_14x7.c util.c
