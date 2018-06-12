@@ -9,14 +9,11 @@
 #include "arg.h"
 #include "util.h"
 
-#define LEN(x) (sizeof(x) / sizeof(*x))
-
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
 int wflag = 80;
 int width;
-
 char *argv0;
 
 /*
@@ -124,18 +121,10 @@ put_time(time_t epoch, time_t last, int nline)
 }
 
 static void
-print_utf8_3bytes(long rune)
-{
-	putchar((char)(0xe0 | (0x0f & (rune >> 12))));	/* 1110xxxx */
-	putchar((char)(0x80 | (0x3f & (rune >> 6))));	/* 10xxxxxx */
-	putchar((char)(0x80 | (0x3f & (rune))));	/* 10xxxxxx */
-}
-
-static void
 put_line(long *out)
 {
 	for (; *out != '\0'; out++)
-		print_utf8_3bytes(*out);
+		put3utf(*out);
 	puts("│");
 }
 

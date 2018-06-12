@@ -1,32 +1,33 @@
-CFLAGS	= -Wall -Wextra -Werror -std=c89 -pedantic -fPIC \
-	-D_POSIX_C_SOURCE=200809L
-LDFLAGS = -static
+CFLAGS		= -Wall -Wextra -Werror -std=c89 -pedantic -fPIC \
+		-D_POSIX_C_SOURCE=200809L
+LDFLAGS		= -static
+BIN		= ploot-ff ploot-feed
+LIB		= -lm
 
-PLOOT_SRC = ploot.c ffplot.c ffdraw.c font_14x7.c util.c
-PLOOT_OBJ = $(PLOOT_SRC:.c=.o)
+SRC_PLOOT_FF	= util.c ploot-ff.c
+HDR_PLOOT_FF	= arg.h util.h font.h
+OBJ_PLOOT_FF	= $(SRC_PLOOT_FF:.c=.o)
 
-PLOOTXT_SRC = plootxt.c util.c
-PLOOTXT_OBJ = $(PLOOTXT_SRC:.c=.o)
+SRC_PLOOT_FEED	= util.c ploot-feed.c
+HDR_PLOOT_FEED	= arg.h util.h
+OBJ_PLOOT_FEED	= $(SRC_PLOOT_FEED:.c=.o)
 
+all: $(BIN)
 
-LIB = -lm
+ploot-ff: $(OBJ_PLOOT_FF)
+	${CC} $(LDFLAGS) -o $@ $(OBJ_PLOOT_FF) $(LIB)
 
-all:V ploot plootxt
+ploot-feed: $(OBJ_PLOOT_FEED)
+	${CC} $(LDFLAGS) -o $@ $(OBJ_PLOOT_FEED) $(LIB)
 
-ploot: $(PLOOT_OBJ)
-	${CC} $(LDFLAGS) -o $@ $(PLOOT_OBJ) $(LIB)
-
-plootxt: $(PLOOTXT_OBJ)
-	${CC} $(LDFLAGS) -o $@ $(PLOOTXT_OBJ) $(LIB)
-
-install:V ploot plootxt
+install: $(BIN)
 	mkdir -p ${PREFIX}/bin
 	cp ploot plootxt ${PREFIX}/bin
 
-clean:V
+clean:
 	rm -f *.o
 
-V: # :V acts like .PHONY:
+.PHONY: all install clean
 
-$(PLOOT_SRC) $(PLOOTXT_SRC): \
-arg.h ploot.h util.h font.h font_14x7.h
+$(SRC_PLOOT_FF): $(HDR_PLOOT_FF)
+$(SRC_PLOOT_FEED): $(HDR_PLOOT_FEED)

@@ -5,7 +5,15 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "ploot.h"
+#include "util.h"
+
+void
+put3utf(long rune)
+{
+	putchar((char)(0xe0 | (0x0f & (rune >> 12))));	/* 1110xxxx */
+	putchar((char)(0x80 | (0x3f & (rune >> 6))));	/* 10xxxxxx */
+	putchar((char)(0x80 | (0x3f & (rune))));	/* 10xxxxxx */
+}
 
 char *
 strsep(char **strp, const char *sep)
@@ -68,4 +76,29 @@ esfgets(char *buf, size_t n, FILE *file)
 	}
 	estriplf(buf);
 	return buf;
+}
+
+/*
+ * Set 'str' to a human-readable form of 'num' with always a width of 8 (+ 1
+ * the '\0' terminator).  Buffer overflow is ensured not to happen due to the
+ * max size of a double.  Return the exponent.
+ */
+int
+humanize(char *str, double val)
+{
+	int exp, precision;
+	char label[] = { '\0', 'M', 'G', 'T', 'E' };
+
+	for (exp = 0; ABS(val) > 1000; exp++)
+		val /= 1000;
+
+	precision = (ABS(val) < 10) ? 2 : (ABS(val) < 100) ? 1 : 0;
+	precision += (exp == 0);
+
+	snprintf(str, 9, "%+.*f %c", precision, val, label[exp]);
+	str[8] = '\0';
+	if (val >= 0)
+		str[0] = ' ';
+
+	return exp * 3;
 }
