@@ -12,35 +12,67 @@
 .Sh SYNOPSIS
 .
 .Nm ploot-feed
-.Op Fl options
-.Ar
+.Op Fl w Ar width
+.Ar maxval...
 .
 .
 .Sh DESCRIPTION
 .
 The
 .Nm
-utility
+utility plots a text chart of csv values coming from stdin in real time.
+.
+.Bl -tag -width 6n
+.
+.It Ar width
+is the width of the plot in characters.
+.
+.It Ar maxval
+is a list of argument that specify the maximum value for each column.
+If the input csv have 5 columns in addition of the timestamp, there must
+be 5 maxval arguments.
+.
+.El
+.
+.Pp
+The input format is documented in the
+.Xr ploot-csv 7
+manual page.
 .
 .
-.\" .Sh CONTEXT
-.\" For section 9 functions only.
-.\" .Sh RETURN VALUES
-.\" For sections 2, 3, and 9 function return values only.
-.\" .Sh ENVIRONMENT
-.\" For sections 1, 6, 7, and 8 only.
-.\" .Sh FILES
-.\" .Sh EXIT STATUS
-.\" For sections 1, 6, and 8 only.
-.\" .Sh EXAMPLES
-.\" .Sh DIAGNOSTICS
-.\" For sections 1, 4, 6, 7, 8, and 9 printf/stderr messages only.
-.\" .Sh ERRORS
-.\" For sections 2, 3, 4, and 9 errno settings only.
-.\" .Sh SEE ALSO
-.\" .Xr foobar 1
-.\" .Sh STANDARDS
-.\" .Sh HISTORY
+.Sh EXIT STATUS
+.Ex -std
+.
+.
+.Sh EXAMPLES
+.
+.Bd -literal -offset indent
+$ cat <<EOF >sample.txt
+epoch,free_memory,process_count
+1533752053,16.3,45
+1533752054,18.7,42
+1533752055,40.1,39
+1533752056,40.1,39
+EOF
+$ ploot-feed -w 80 1 1 <sample.txt
+.Ed
+.
+.
+.Sh SEE ALSO
+.
+.Xr ploot-ff 1 ,
+.Xr ploot-format 7
+.
+.
+.Sh HISTORY
+.
+.Nm
+earned its author a bitreich.org medal of misspelled program name.
+.
+.Pp
+.Nm
+was written at
+.Lk gopher://bitreich.org/1/scm/ploot/ "Bitreich"
 .
 .
 .Sh AUTHORS
@@ -49,5 +81,12 @@ utility
 .Aq Mt mail@josuah.net
 .
 .
-.\" .Sh CAVEATS
-.\" .Sh BUGS
+.Sh BUGS
+.
+.Nm
+does not make any math on the input: if the timestamps are not at regular
+interval, ploot will still print one output line every 4 lines read,
+regardless of the time interval.
+.
+.Pp
+However, the timestamp printed on the left is always exact.

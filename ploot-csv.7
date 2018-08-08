@@ -1,0 +1,90 @@
+.Dd $Mdocdate: August 08 2018$
+.Dt PLOOT-CSV 7
+.Os
+.
+.
+.Sh NAME
+.
+.Nm ploot-csv
+.Nd input format used by the ploot set of programs
+.
+.
+.Sh SYNOPSIS
+.
+.Bd -literal -offset indent
+epoch,column-name-1,column-name-2
+timestamp,value1,value2
+.Ed
+.
+.
+.Sh DESCRIPTION
+.
+This is the simple comma-separated format used by the ploot-* programs.
+.\" .Sh STANDARDS
+.\" .Sh HISTORY
+.
+.
+.Sh AUTHORS
+.
+.An Josuah Demangeon
+.Aq Mt mail@josuah.net
+.
+.
+.\" .Sh CAVEATS
+.\" .Sh BUGS
+.Sh INPUT FORMAT
+.
+.Nm reads lines and column from standard input.
+Each line correspond to one entry with the same timestamp.
+Each input column correspond to one output column, one type of data.
+.
+.Pp
+.
+.
+.Ss Header line
+.
+The program must contain a first header line with the label of each column.
+The first column is always a timestamp, and the first label must be
+.Dq epoch .
+The following columns
+.
+.Bd -literal -offset indent
+epoch,free_memory,process_count
+.Ed
+.
+.
+.Ss Data lines
+.
+The following lines are the data.
+The first column is an unix timestamp: number of seconds since 00:00:00
+01/01/1970.
+The remaining columns are values, that might be decimal
+.Po
+they will be read as a
+.Vt double
+.Pc .
+.
+.Bd -literal -offset indent
+1533752053,16.3,45
+1533752054,18.7,42
+1533752055,40.1,39
+1533752056,40.1,39
+.Ed
+.
+.
+.Sh SEE ALSO
+.
+.Xr ploot-feed 1 ,
+.Xr ploot-ff 1
+.
+.Sh HISTORY
+.
+.Nm
+was defined at
+.Lk gopher://bitreich.org/1/scm/ploot/ "Bitreich"
+.
+.
+.Sh AUTHORS
+.
+.An Josuah Demangeon
+.Aq Mt mail@josuah.net

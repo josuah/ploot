@@ -137,7 +137,7 @@ plot(char labels[LINE_MAX], double *max, int ncol)
 
 	last_epoch = epoch = 0;
 
-	for (n = 0;; n = n == 25 ? 0 : n + 1) {
+	for (n = 0;; n = (n == 25 ? 0 : n + 1)) {
 		if (n == 0)
 			put_time(0, 0, 2), fputs(labels, stdout), puts("│");
 

@@ -1,0 +1,103 @@
+.Dd $Mdocdate: August 08 2018$
+.Dt PLOOT-FF 1
+.Os
+.
+.
+.Sh NAME
+.
+.Nm ploot-ff
+.Nd produce a farbfeld image of csv input
+.
+.
+.Sh SYNOPSIS
+.
+.Nm ploot-ff
+.Op Fl t Ar title
+.Op Fl u Ar unit
+.Ar colors...
+.
+.
+.Sh DESCRIPTION
+.
+The
+.Nm
+utility plots an image in the farbfeld format out of csv values coming from stdin.
+.
+.Bl -tag -width 6n
+.
+.It Fl t
+Set the title of the plot printed at the top left corner.
+.
+.It Fl u
+Set the unit description printed at the top right corner.
+.
+.It Ar colors
+List of argument that specify the color for each column.
+If the input csv have 5 columns in addition of the timestamp, there must
+be 5 maxval arguments.
+Colors available are red, orange, yellow, green, cyan and blue.
+.
+.El
+.
+.Pp
+The input format is documented in the
+.Xr ploot-csv 7
+manual page.
+.
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.
+.Sh EXAMPLES
+.
+.Bd -literal -offset indent
+$ cat <<EOF >sample.txt
+epoch,used_memory,free_memory
+1533752053,160,401
+1533752054,180,381
+1533752055,301,260
+1533752056,303,258
+EOF
+$ ploot-ff -t demo -u MB red yellow <sample.txt
+.Ed
+.
+.
+.Sh SEE ALSO
+.
+.Xr ploot-ff 1 ,
+.Xr ploot-csv 7
+.
+.Pp
+The
+.Xr farbfeld 7
+image format:
+.Lk https://tools.suckless.org/farbfeld/
+.
+.
+.Sh HISTORY
+.
+.Nm
+earned its author a bitreich.org medal of misspelled program name.
+.
+.Pp
+.Nm
+was written at
+.Lk gopher://bitreich.org/1/scm/ploot/ "Bitreich"
+.
+.
+.Sh AUTHORS
+.
+.An Josuah Demangeon
+.Aq Mt mail@josuah.net
+.
+.
+.Sh BUGS
+.
+.Nm
+does not make any math on the input: if the timestamps are not at regular
+interval, ploot will still print one output line every 4 lines read,
+regardless of the time interval.
+.
+.Pp
+However, the timestamp printed on the left is always exact.
