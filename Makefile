@@ -3,7 +3,6 @@ CFLAGS		= -Wall -Wextra -Werror -std=c89 -pedantic -fPIC \
 LDFLAGS		= -static
 BIN		= ploot-ff ploot-feed
 LIB		= -lm
-MAN		= ploot-ff.1 ploot-feed.1
 MANDIR		= $(PREFIX)/share/man
 
 SRC_PLOOT_FF	= util.c ploot-ff.c
@@ -23,9 +22,10 @@ ploot-feed: $(OBJ_PLOOT_FEED)
 	${CC} $(LDFLAGS) -o $@ $(OBJ_PLOOT_FEED) $(LIB)
 
 install: $(BIN)
-	mkdir -p ${PREFIX}/bin $(MANDIR)/man1
+	mkdir -p ${PREFIX}/bin $(MANDIR)/man1 $(MANDIR)/man7
 	cp $(BIN) ${PREFIX}/bin
-	cp $(MAN) $(MANDIR)/man1
+	cp ploot-ff.1 ploot-feed.1 $(MANDIR)/man1
+	cp ploot-csv.7 $(MANDIR)/man7
 
 clean:
 	rm -f *.o
