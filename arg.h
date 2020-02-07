@@ -1,27 +1,20 @@
 #ifndef ARG_H
 #define ARG_H
 
-extern char *argv0;
+extern char const	*arg0;
 
-#define ARGBEGIN \
-	for (argv0 = *argv, argv++, argc--; \
-	    argv[0] != NULL && argv[0][0] == '-' && argv[0][1] != '\0'; \
-	    argc--, argv++) { \
-		char **_argv, *_a; \
-		if (argv[0][1] == '-' && argv[0][2] == '\0') { \
-			argv++, argc--; \
-			break; \
-		} \
-		for (_argv = argv, _a = *argv + 1; *_a != '\0'; _a++) { \
-			switch (*_a)
+#define ARG_SWITCH(argc, argv)						\
+	arg0 = *argv;							\
+	while (++argv && --argc && **argv == '-' && (*argv)[1])	\
+		if ((*argv)[1] == '-' && (*argv)[2] == '\0') {		\
+			++argv; break;					\
+	} else for (int stop = 0; !stop && *++*argv != '\0' ;)		\
+		switch (**argv)
 
-#define ARGEND \
-			if (_argv != argv) \
-				break; \
-		} \
-	}
+#define ARG ((*++*argv != '\0' || *++argv != NULL)			\
+		? ((stop = 1), argc--, *argv)				\
+		: (usage(), NULL))
 
-#define	EARGF(x) \
-	((argv[1] == NULL) ? ((x), (char *)0) : (argc--, argv++, argv[0]))
+extern char const *arg0;
 
 #endif

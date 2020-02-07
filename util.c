@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "util.h"
+#include "def.h"
 
 void
 put3utf(long rune)

@@ -5,16 +5,17 @@
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 
 #include "arg.h"
-#include "util.h"
+#include "def.h"
 
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
-int wflag = 80;
-int width;
-char *argv0;
+int		wflag = 80;
+int		width = 0;
+char const	*arg0 = NULL;
 
 /*
  * Turn the bit at position (row, col) on in the .
@@ -35,7 +36,7 @@ plot_dot(long *out, int row, int col)
 static void
 plot_val(long *out, double val, double max, int row)
 {
-	int col, c;
+	int		col, c;
 
 	val = MIN(max, val);
 	col = (int)(val * (double)(width - 1) / max * 2);
@@ -50,10 +51,10 @@ plot_val(long *out, double val, double max, int row)
 static time_t
 plot_row(long *out, char *line, double *max, int nrow, int ncol)
 {
-	time_t epoch;
-	double val;
-	int n;
-	char *tok;
+	time_t		epoch;
+	double		val;
+	int		n;
+	char		*tok;
 
 	if ((tok = strsep(&line, ",")) == NULL)
 		fputs("*** missing epoch value\n", stderr), exit(1);
@@ -77,10 +78,10 @@ plot_row(long *out, char *line, double *max, int nrow, int ncol)
 static time_t
 plot_line(long *out, double *max, int ncol)
 {
-	time_t epoch;
-	int n, nrow;
-	long *o, rune;
-	char line[LINE_MAX];
+	time_t		epoch;
+	int		n, nrow;
+	long		*o, rune;
+	char		line[LINE_MAX];
 
 	for (rune = BRAILLE_START, o = out, n = ncol * width; n > 0; o++, n--)
 		memcpy(o, &rune, sizeof(rune));
@@ -101,7 +102,7 @@ plot_line(long *out, double *max, int ncol)
 static void
 put_time(time_t epoch, time_t last, int nline)
 {
-	char *out, buf[sizeof("XXxXXxXX  ")];
+	char		*out, buf[sizeof("XXxXXxXX  ")];
 
 	switch (nline % 3) {
 	case 0:
@@ -131,9 +132,9 @@ put_line(long *out)
 static void
 plot(char labels[LINE_MAX], double *max, int ncol)
 {
-	time_t epoch, last_epoch;
-	long out[WIDTH_MAX + 1];
-	int n;
+	time_t		epoch, last_epoch;
+	long		out[WIDTH_MAX + 1];
+	int		n;
 
 	last_epoch = epoch = 0;
 
@@ -157,8 +158,8 @@ plot(char labels[LINE_MAX], double *max, int ncol)
 static int
 read_labels(char *labv[LINE_MAX])
 {
-	int ncol;
-	char *l, line[LINE_MAX], *tok;
+	int		ncol;
+	char		*l, line[LINE_MAX], *tok;
 
 	if ((l = esfgets(line, LINE_MAX, stdin)) == NULL)
 		fputs("missing label line\n", stderr), exit(1);
@@ -179,7 +180,7 @@ read_labels(char *labv[LINE_MAX])
 static void
 fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 {
-	int i, n;
+	int		i, n;
 
 	for (i = 0; i < ncol; labels++, i++) {
 		n = LINE_MAX - (width + sizeof("│")) * i;
@@ -190,22 +191,22 @@ fmt_labels(char out[LINE_MAX], int ncol, char *labels[LINE_MAX / 2])
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-w width] maxval... <csv\n", argv0);
+	fprintf(stderr, "usage: %s [-w width] maxval... <csv\n", arg0);
 	exit(1);
 }
 
 static int
 parse_args(int argc, char **argv, double *max)
 {
-	int n;
+	int		n;
 
-	ARGBEGIN {
+	ARG_SWITCH(argc, argv) {
 	case 'w':
-		wflag = atoi(EARGF(usage()));
+		wflag = atoi(ARG);
 		break;
 	default:
 		usage();
-	} ARGEND;
+	}
 
 	if (argc == 0)
 		usage();
@@ -219,9 +220,9 @@ parse_args(int argc, char **argv, double *max)
 int
 main(int argc, char **argv)
 {
-	double max[LINE_MAX / 2];
-	int ncol, nmax;
-	char *labv[LINE_MAX / 2], labels[LINE_MAX];
+	double		max[LINE_MAX / 2];
+	int		ncol, nmax;
+	char		*labv[LINE_MAX / 2], labels[LINE_MAX];
 
 	setvbuf(stdin, NULL, _IOLBF, 0);
 	nmax = parse_args(argc, argv, max);
