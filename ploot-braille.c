@@ -128,7 +128,6 @@ plot_render(struct drawille *drw, double min, double max, time_t step, time_t t2
 		n += strlcpy(buf+n, "\n", sz-n);
 	}
 	plot_axis_x(buf+n, sz-n, step, t2, drw->col);
-
 	return buf;
 err:
 	errno = ENOBUFS;
@@ -141,7 +140,7 @@ err:
  * a vertical and horizontal axis.
  */
 static char *
-plot_hist(struct timeserie *ts, time_t t2, struct drawille *drw)
+plot_hist(struct vlist *vl, time_t t2, struct drawille *drw)
 {
 	int		x, y, zero, shift;
 	double		min, max, val;
@@ -149,7 +148,7 @@ plot_hist(struct timeserie *ts, time_t t2, struct drawille *drw)
 
 	/* Adjust the y scale. */
 	shift = min = max = 0;
-	timeserie_stats(ts, &min, &max);
+	timeserie_stats(vl, &min, &max);
 	if (drw->row > 1) {
 		shift = 2;  /* Align values to the middle of the scale: |- */
 		plot_scale(&min, &max, drw->row);
@@ -157,25 +156,25 @@ plot_hist(struct timeserie *ts, time_t t2, struct drawille *drw)
 	zero = timeserie_ypos(0, min, max, drw->row*4) - shift;
 
 	/* Adjust the x scale. */
-	t2 = t2 + ts->step - t2 % ts->step;
-	t1 = t2 - ts->step * ts->len;
+	t2 = t2 + vl->step - t2 % vl->step;
+	t1 = t2 - vl->step * vl->len;
 
 	/* Plot the data in memory in <drw> starting from the end (t2). */
 	t = t2;
 	for (x = drw->col * 2; x > 0; x--) {
-		val = timeserie_get(ts, t);
+		val = timeserie_get(vl, t);
 		if (!isnan(val)) {
 			y = timeserie_ypos(val, min, max, drw->row*4) - shift;
 			drawille_dot_hist(drw, x, y, zero);
 		}
-		t -= ts->step;
+		t -= vl->step;
 	}
 
-	return plot_render(drw, min, max, ts->step, t2);
+	return plot_render(drw, min, max, vl->step, t2);
 }
 
 static char *
-plot(struct timeserie *ts, time_t t2, int row, int col)
+plot(struct vlist *vl, time_t t2, int row, int col)
 {
 	struct drawille	*drw;
 	size_t		len;
@@ -186,16 +185,16 @@ plot(struct timeserie *ts, time_t t2, int row, int col)
 	drw = NULL;
 	col -= 8;
 
-	if (timeserie_read(ts) == -1)
+	if (timeserie_read(vl) == -1)
 		goto err;
 
 	if ((drw = drawille_new(row, col)) == NULL)
 		goto err;
 
-	buf = plot_hist(ts, t2, drw);
+	buf = plot_hist(vl, t2, drw);
 err:
 	if (buf == NULL)
-		timedb_close(&ts->db);
+		timedb_close(&vl->db);
 	free(drw);
 	return buf;
 }

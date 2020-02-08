@@ -5,7 +5,7 @@ BIN	= ploot-ff ploot-feed
 LIB	= -lm
 MANDIR	= $(PREFIX)/share/man
 
-SRC	= util.c drawille.c font.c font7.c font8.c font13.c
+SRC	= csv.c drawille.c font.c font7.c font8.c font13.c util.c scale.c
 
 all: $(BIN)
 

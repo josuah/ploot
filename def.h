@@ -23,6 +23,23 @@ struct font {
 	char		*glyph[128];	/* 0: end, 1: off, 2: on.  */
 };
 
+/*
+ * List of values and timestamps.  Both have their dedicated buffer
+ * so that the timestamp buffer can be shared across vlist objects.
+ */
+struct vlist {
+	time_t		*t;		/* array of timestamps */
+	double		*v;		/* array of values */
+	size_t		n;		/* number of values */
+	char		*label;		/* for the legend */
+};
+
+/* csv.c */
+
+void		csv_addrow		(struct vlist *, size_t, char *);
+void		csv_values		(struct vlist *, size_t);
+void		csv_labels		(struct vlist *, char **, char *);
+
 /* drawille.c */
 
 size_t		drawille_fmt_row	(struct drawille *, char *, size_t, int);
@@ -38,17 +55,15 @@ char *		drawille_text		(struct drawille *, int, int, struct font *, char *);
 size_t		font_width		(struct font *, int);
 size_t		font_strlen		(struct font *, char *);
 
-/* font13.c */
+/* font*.c */
 
 struct font font13;
-
-/* font7.c */
-
+struct font font7;
 struct font font8;
 
-/* font8.c */
+/* scale.c */
 
-struct font font8;
+void		scale			(struct vlist *, int, time_t *, time_t *, time_t *, double *, double *, double *);
 
 /* util.c */
 

@@ -18,9 +18,6 @@
 
 #define MARGIN		4
 
-#define XDENSITX	7		/* nb of values on x axis */
-#define YDENSITX	7		/* nb of values on y axis */
-
 #define IMAGE_H		(TITLE_H + PLOT_H + XLABEL_H)
 #define IMAGE_W		(YLABEL_W + PLOT_W + LEGEND_W)
 
@@ -45,8 +42,8 @@
 #define PLOT_H		(160)
 
 #define LEGEND_X	(IMAGE_W - LEGEND_W)
-#define LEGEND_Y	(XLABEL_H)
-#define LEGEND_W	(150)
+#define LEGEND_Y	(TITLE_H + PLOT_H - (font)->height)
+#define LEGEND_W	(100)
 #define LEGEND_H	(PLOT_H)
 
 struct color {
@@ -56,12 +53,9 @@ struct color {
 	uint16_t	alpha;
 };
 
-struct vlist {
-	struct color	color;		/* color to use to draw the line */
-	time_t		*t;		/* array of timestamps */
-	double		*v;		/* array of values */
-	int		n;		/* number of values */
-	char		*label;		/* for the legend */
+struct cname {
+	char		*name;
+	struct color	color;
 };
 
 struct canvas {
@@ -72,17 +66,12 @@ struct canvas {
 	struct color	*buf;
 };
 
-struct clist {
-	char		*name;
-	struct color	color;
-};
-
 char const		*arg0;
 static char		*tflag	= "";
 static char		*uflag	= "";
 static struct font	*font = &font13;
 
-struct clist clist[] = {
+static struct cname cname[] = {
 	/* name       red     green   blue    alpha */
 	{ "red",    { 0xffff, 0x4444, 0x4444, 0xffff } },
 	{ "orange", { 0xffff, 0x9999, 0x4444, 0xffff } },
@@ -92,98 +81,6 @@ struct clist clist[] = {
 	{ "blue",   { 0x2222, 0x9999, 0xffff, 0xffff } },
 	{ NULL, { 0, 0, 0, 0 } }
 };
-
-static struct color *
-name_to_color(char *name)
-{
-	for (struct clist *c = clist; c->name != NULL; c++)
-		if (strcmp(name, c->name) == 0)
-			return &c->color;
-	return NULL;
-}
-
-static void
-scale_minmax(struct vlist *v, int n,
-	time_t *tmin, time_t *tmax,
-	double *vmin, double *vmax)
-{
-	int		i;
-
-	*vmin = *vmax = 0;
-	*tmin = *tmax = *v->t;
-
-	for (; n-- > 0; v++) {
-		for (i = 0; i < v->n; i++) {
-			if (v->v[i] < *vmin)
-				*vmin = v->v[i];
-			if (v->v[i] > *vmax)
-				*vmax = v->v[i];
-			if (v->t[i] < *tmin)
-				*tmin = v->t[i];
-			if (v->t[i] > *tmax)
-				*tmax = v->t[i];
-		}
-	}
-}
-
-static void
-scale_tstep(time_t *step, int density, time_t min, time_t max)
-{
-        time_t dt, *s, scale[] = {
-		1, 5, 2, 10, 20, 30, 60, 60*2, 60*5, 60*10, 60*20, 60*30, 3600, 
-		3600*2, 3600*5, 3600*10, 3600*18, 3600*24, 3600*24*2, 
-		3600*24*5, 3600*24*10, 3600*24*20, 3600*24*30, 3600*24*50,
-		3600*24*100, 3600*24*365, 0
-	};
-
-	dt = max - min;
-
-	for (s = scale; s < scale + LEN(scale); s++) {
-		if (dt < *s * density) {
-			*step = *s;
-			break;
-		}
-	}
-}
-
-static void
-scale_vstep(double *step, int density, double min, double max)
-{
-	double		 dv, *s, scale[] = { 1, 2, 3, 5 };
-	int		i;
-
-	dv = max - min;
-
-	if (dv > 1) {
-		for (i = 1; i != 0; i *= 10) {
-			for (s = scale; s < scale + LEN(scale); s++) {
-				if (dv < *s * i * density) {
-					*step = *s * i;
-					return;
-				}
-			}
-		}
-	} else {
-		for (i = 1; i != 0; i *= 10) {
-			for (s = scale + LEN(scale) - 1; s >= scale; s--) {
-				if (dv > *s / i * density / 2) {
-					*step = *s / i;
-					return;
-				}
-			}
-		}
-	}
-}
-
-static void
-scale(struct vlist *v, int n,
-	time_t *tmin, time_t *tmax, time_t *tstep,
-	double *vmin, double *vmax, double *vstep)
-{
-	scale_minmax(v, n, tmin, tmax, vmin, vmax);
-	scale_tstep(tstep, XDENSITX, *tmin, *tmax);
-	scale_vstep(vstep, YDENSITX, *vmin, *vmax);
-}
 
 /*
  * Convert (x,y) coordinates to (row,col) for printing into the buffer.
@@ -196,18 +93,18 @@ scale(struct vlist *v, int n,
  * - (0,1) is above it.                                      +--x
  */
 static void
-ff_pixel(struct canvas *can, struct color *col,
+ff_pixel(struct canvas *can, struct color *color,
 	int x, int y)
 {
 	x += can->x;
 	y += can->y;
 	if (x < 0 || x >= can->w || y < 0 || y >= can->h)
 		return;
-	memcpy(can->buf + can->w * (can->h - 1 - y) + x, col, sizeof(*can->buf));
+	memcpy(can->buf + can->w * (can->h - 1 - y) + x, color, sizeof(*can->buf));
 }
 
 static void
-ff_rectangle(struct canvas *can, struct color *col,
+ff_rectangle(struct canvas *can, struct color *color,
 	int y1, int x1,
 	int y2, int x2)
 {
@@ -218,14 +115,14 @@ ff_rectangle(struct canvas *can, struct color *col,
 
 	for (y = ymin; y <= ymax; y++)
 		for (x = xmin; x <= xmax; x++)
-			ff_pixel(can, col, x, y);
+			ff_pixel(can, color, x, y);
 }
 
 /*
  * From Bresenham's line algorithm and dcat's tplot.
  */
 static void
-ff_line(struct canvas *can, struct color *col,
+ff_line(struct canvas *can, struct color *color,
 	int x0, int y0,
 	int x1, int y1)
 {
@@ -238,7 +135,7 @@ ff_line(struct canvas *can, struct color *col,
 	err = (dy > dx ? dy : -dx) / 2;
 
 	for (;;) {
-		ff_pixel(can, col, x0, y0);
+		ff_pixel(can, color, x0, y0);
 
 		if (y0 == y1 && x0 == x1)
 			break;
@@ -259,7 +156,7 @@ ff_line(struct canvas *can, struct color *col,
  * Draw a coloured glyph from font f centered on y.
  */
 static int
-ff_char(struct canvas *can, struct color *col, char c,
+ff_char(struct canvas *can, struct color *color, char c,
 	int x, int y)
 {
 	int		yf, xf, wf;
@@ -271,7 +168,7 @@ ff_char(struct canvas *can, struct color *col, char c,
 	for (xf = 0; xf < wf; xf++)
 		for (yf = 0; yf < font->height; yf++)
 			if (font->glyph[(int)c][wf * (font->height - yf) + xf] == 3)
-				ff_pixel(can, col, x + xf, y + yf);
+				ff_pixel(can, color, x + xf, y + yf);
 	return wf + 1;
 }
 
@@ -279,11 +176,11 @@ ff_char(struct canvas *can, struct color *col, char c,
  * Draw a left aligned string without wrapping it.
  */
 static size_t
-ff_text_left(struct canvas *can, struct color *col, char *s,
+ff_text_left(struct canvas *can, struct color *color, char *s,
 	int x, int y)
 {
 	for (; *s != '\0'; s++)
-		x += ff_char(can, col, *s, x, y);
+		x += ff_char(can, color, *s, x, y);
 	return x;
 }
 
@@ -291,22 +188,22 @@ ff_text_left(struct canvas *can, struct color *col, char *s,
  * Draw a center aligned string without wrapping it.
  */
 static size_t
-ff_text_center(struct canvas *can, struct color *col, char *s,
+ff_text_center(struct canvas *can, struct color *color, char *s,
 	int x, int y)
 {
 	x -= font_strlen(font, s) / 2;
-	return ff_text_left(can, col, s, x, y);
+	return ff_text_left(can, color, s, x, y);
 }
 
 /*
  * Draw a right aligned string without wrapping it.
  */
 static size_t
-ff_text_right(struct canvas *can, struct color *col, char *s,
+ff_text_right(struct canvas *can, struct color *color, char *s,
 	int x, int y)
 {
 	x -= font_strlen(font, s);
-	return ff_text_left(can, col, s, x, y);
+	return ff_text_left(can, color, s, x, y);
 }
 
 static void
@@ -326,12 +223,16 @@ ff_print(struct canvas *can)
 static int
 ff_t2x(time_t t, time_t tmin, time_t tmax)
 {
+	if (tmin == tmax)
+		return PLOT_W;
 	return (t - tmin) * PLOT_W / (tmax - tmin);
 }
 
 static int
 ff_v2y(double v, double vmin, double vmax)
 {
+	if (vmin == vmax)
+		return PLOT_H;
 	return (v - vmin) * PLOT_H / (vmax - vmin);
 }
 
@@ -394,7 +295,7 @@ ff_title(struct canvas *can,
 }
 
 static void
-ff_plot(struct canvas *can, struct vlist *v,
+ff_plot(struct canvas *can, struct vlist *vl, struct color *color,
 	double vmin, double vmax,
 	time_t tmin, time_t tmax)
 {
@@ -403,12 +304,12 @@ ff_plot(struct canvas *can, struct vlist *v,
 	int		x, y, n, ylast, xlast, first;
 
 	first = 1;
-	for (tp = v->t, vp = v->v, n = v->n; n > 0; n--, vp++, tp++) {
+	for (tp = vl->t, vp = vl->v, n = vl->n; n > 0; n--, vp++, tp++) {
 		y = ff_v2y(*vp, vmin, vmax);
 		x = ff_t2x(*tp, tmin, tmax);
 
 		if (!first)
-			ff_line(can, &v->color, xlast, ylast, x, y);
+			ff_line(can, color, xlast, ylast, x, y);
 
 		ylast = y;
 		xlast = x;
@@ -417,24 +318,24 @@ ff_plot(struct canvas *can, struct vlist *v,
 }
 
 static void
-ff_values(struct canvas *can, struct vlist *v, int n,
+ff_values(struct canvas *can, struct vlist *vl, struct color **cl, size_t ncol,
 	time_t tmin, time_t tmax,
 	double vmin, double vmax)
 {
-	for (; n > 0; n--, v++)
-		ff_plot(can, v, vmin, vmax, tmin, tmax);
+	for (; ncol > 0; ncol--, vl++, cl++)
+		ff_plot(can, vl, *cl, vmin, vmax, tmin, tmax);
 }
 
 static void
-ff_legend(struct canvas *can, struct color *label_fg, struct vlist *v, int n)
+ff_legend(struct canvas *can, struct color *fg, struct vlist *vl, struct color **cl, size_t ncol)
 {
-	int i, x, y;
+	size_t		i, x, y;
 
-	for (i = 0; i < n; i++, v++) {
-		x = MARGIN;
-		x = ff_text_left(can, &v->color, "\1", x, y);
-		x = ff_text_left(can, label_fg, v->label, x, y);
-		y = LEGEND_H - i * (font->height + MARGIN) - font->height / 2;
+	for (i = 0; i < ncol; i++, vl++, cl++) {
+		x = MARGIN * 2;
+		x = ff_text_left(can, *cl, "\1", x, y) + MARGIN;
+		x = ff_text_left(can, fg, vl->label, x, y);
+		y = LEGEND_H - i * (font->height + MARGIN);
 	}
 }
 
@@ -450,7 +351,7 @@ ff_legend(struct canvas *can, struct color *label_fg, struct vlist *v, int n)
  *	        x label here        
  */
 static void
-ff(struct vlist *v, int n, char *name, char *units)
+ff(struct vlist *vl, struct color **cl, size_t ncol, char *name, char *units)
 {
 	struct canvas	can = { IMAGE_W, IMAGE_H, 0, 0, NULL };
 	struct color	plot_bg = { 0x2222, 0x2222, 0x2222, 0xffff };
@@ -461,7 +362,7 @@ ff(struct vlist *v, int n, char *name, char *units)
 	double		vmin, vmax, vstep;
 	time_t		tmin, tmax, tstep;
 
-	scale(v, n, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
+	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
 
 	assert(can.buf = calloc(IMAGE_H * IMAGE_W, sizeof *can.buf));
 
@@ -487,108 +388,41 @@ ff(struct vlist *v, int n, char *name, char *units)
 
 	can.x = PLOT_X;
 	can.y = PLOT_Y;
-	ff_values(&can, v, n, tmin, tmax, vmin, vmax);
+	ff_values(&can, vl, cl, ncol, tmin, tmax, vmin, vmax);
 
 	can.x = LEGEND_X;
 	can.y = LEGEND_Y;
-	ff_legend(&can, &label_fg, v, n);
+	ff_legend(&can, &label_fg, vl, cl, ncol);
 
 	ff_print(&can);
 }
- 
+
+static struct color *
+name_to_color(char *name)
+{
+	struct cname	*cn;
+
+	for (cn = cname; cn->name != NULL; cn++)
+		if (strcmp(name, cn->name) == 0)
+			return &cn->color;
+	return NULL;
+}
+
 static void
-csv_labels(struct vlist *v, char **argv, char *buf)
+argv_to_color(struct color **cl, char **argv)
 {
-	struct color	*color;
-
-	if (esfgets(buf, LINE_MAX, stdin) == NULL)
-		err(1, "missing label line");
- 
-	if (strcmp(strsep(&buf, ","), "epoch") != 0)
-		err(1, "first label must be \"epoch\"");
- 
-	for (; *argv != NULL; v++, argv++) {
-		if ((v->label = strsep(&buf, ",")) == NULL)
-			err(1, "more arguments than columns");
-		else if ((color = name_to_color(*argv)) == NULL)
-			err(1, "unknown color: %s", *argv);
-		v->color = *color;
-	}
- 
-	if (strsep(&buf, ",") != NULL)
-		err(1, "more columns than arguments");
-}
-
-static int
-csv_addval(struct vlist *v, size_t sz, size_t nval, double field, time_t epoch)
-{
-	if (nval >= sz) {
-		sz = sz * 2 + 1;
-		if ((v->v = realloc(v->v, sz * sizeof(*v->v))) == NULL)
-			err(1, "reallocating values buffer");
-		if ((v->t = realloc(v->t, sz * sizeof(*v->t))) == NULL)
-			err(1, "reallocating values buffer");
-	}
-	v->v[nval] = field;
-	v->t[nval] = epoch;
-	v->n = nval + 1;
-
-	return sz;
-}
-
-/*
- * Add to each column the value on the current row.
- */
-static int
-csv_addrow(struct vlist *v, size_t sz, size_t ncol, size_t nval, char *line)
-{
-	time_t		epoch;
-	int		bs;
-	char		*field, *dot;
-
-	if ((field = strsep(&line, ",")) == NULL)
-		err(1, "%d: missing epoch", nval);
-
-	if ((dot = strchr(field, '.')) != NULL)
-		*dot = '\0';
-	epoch = eatol(field);
-	for (; (field = strsep(&line, ",")) != NULL; ncol--, v++) {
-		if (ncol <= 0)
-			err(1, "%d: too many fields", nval);
-		bs = csv_addval(v, sz, nval, eatof(field), epoch);
-	}
-	if (ncol > 0)
-		err(1, "%d: too few fields", ncol);
-
-	return bs;
-}
-
-/*
- *       < ncol >
- * epoch,a1,b1,c1  ^
- * epoch,a2,b2,c2 nval
- * epoch,a3,b3,c3  v
- */
-static void
-csv_values(struct vlist *v, size_t ncol)
-{
-	int		nval, sz;
-	char		line[LINE_MAX];
-
-	sz = 0;
-	for (nval = 0; esfgets(line, sizeof(line), stdin) != NULL; nval++)
-		sz = csv_addrow(v, sz, ncol, nval, line);
-	if (nval == 0)
-		err(1, "no value could be read\n");
+	for (; *argv != NULL; cl++, argv++)
+		if ((*cl = name_to_color(*argv)) == NULL)
+			err(1, "unknown color name: %s", *argv);
 }
 
 static void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [-t title] [-u unit] {", arg0);
-	fputs(clist->name, stderr);
-	for (struct clist *c = clist + 1; c->name != NULL; c++)
-		fprintf(stderr, ",%s", c->name);
+	fputs(cname->name, stderr);
+	for (struct cname *cn = cname + 1; cn->name != NULL; cn++)
+		fprintf(stderr, ",%s", cn->name);
 	fputs("}...\n", stderr);
 	exit(1);
 }
@@ -596,7 +430,8 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	struct vlist	*v;
+	struct vlist	*vl;
+	struct color	**cl;
 	char		labels[LINE_MAX];
 
 	ARG_SWITCH(argc, argv) {
@@ -610,15 +445,19 @@ main(int argc, char **argv)
 		usage();
 	}
 
-	fflush(stdout);
+	if (argc == 0)
+		usage();
 
-	if ((v = calloc(argc, sizeof(*v))) == NULL)
-		err(1, "calloc value list");
+	assert(vl = calloc(argc, sizeof(*vl)));
+	assert(cl = calloc(argc, sizeof(*cl)));
 
-	csv_labels(v, argv, labels);
-	csv_values(v, argc);
+	csv_labels(vl, argv, labels);
+	csv_values(vl, argc);
+	argv_to_color(cl, argv);
 
-	ff(v, argc, tflag, uflag);
+	ff(vl, cl, argc, tflag, uflag);
 
+	free(vl);
+	free(cl);
 	return 0;
 }
