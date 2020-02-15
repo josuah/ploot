@@ -1,11 +1,11 @@
 ploot
-================================================================================
+=====
 
 
-ploot-ff
---------------------------------------------------------------------------------
+ploot-farbfeld
+--------------
 
-*ploot-ff* reads collectd-style comma separated values (CSV) and produces a plot
+*ploot-farbfeld* reads collectd-style comma separated values (CSV) and produces a plot
 in the farbfeld [1] image format (pipe it to ff2png). It is an alternative to
 RRDtool [2].
 
@@ -18,7 +18,7 @@ name of the curves.
 
 
 ploot-feed
---------------------------------------------------------------------------------
+----------
 
 *ploot-feed* also reads collectd-style comma separated values (CSV) but produces
 a plain text continuous waterfall chart for live monitoring in the terminal. it

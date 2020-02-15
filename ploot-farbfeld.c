@@ -329,13 +329,13 @@ ff_values(struct canvas *can, struct vlist *vl, struct color **cl, size_t ncol,
 static void
 ff_legend(struct canvas *can, struct color *fg, struct vlist *vl, struct color **cl, size_t ncol)
 {
-	size_t		i, x, y;
+	size_t		x, y;
 
-	for (i = 0; i < ncol; i++, vl++, cl++) {
+	for (; ncol > 0; ncol--, vl++, cl++) {
+		y = -(ncol - 1) * (font->height + MARGIN);
 		x = MARGIN * 2;
-		x = ff_text_left(can, *cl, "\1", x, y) + MARGIN;
+		x = ff_text_left(can, *cl, "-", x, y) + MARGIN;
 		x = ff_text_left(can, fg, vl->label, x, y);
-		y = LEGEND_H - i * (font->height + MARGIN);
 	}
 }
 
@@ -433,6 +433,7 @@ main(int argc, char **argv)
 	struct vlist	*vl;
 	struct color	**cl;
 	char		labels[LINE_MAX];
+	size_t		ncol;
 
 	ARG_SWITCH(argc, argv) {
 	case 't':
@@ -448,11 +449,14 @@ main(int argc, char **argv)
 	if (argc == 0)
 		usage();
 
-	assert(vl = calloc(argc, sizeof(*vl)));
 	assert(cl = calloc(argc, sizeof(*cl)));
 
-	csv_labels(vl, argv, labels);
-	csv_values(vl, argc);
+	csv_labels(stdin, labels, &vl, &ncol);
+	if (ncol > (size_t)argc)
+		err(1, "too many columns or not enough arguments");
+	else if (ncol < (size_t)argc)
+		err(1, "too many arguments or not enough columns");
+	csv_values(stdin, vl, ncol);
 	argv_to_color(cl, argv);
 
 	ff(vl, cl, argc, tflag, uflag);
