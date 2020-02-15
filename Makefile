@@ -1,5 +1,4 @@
-CFLAGS	= -Wall -Wextra -std=c99 -pedantic -fPIC \
-		-D_POSIX_C_SOURCE=200809L
+CFLAGS	= -Wall -Wextra -std=c99 -pedantic -fPIC
 LFLAGS	= -static
 BIN	= ploot-farbfeld ploot-feed ploot-braille
 LIB	= -lm
@@ -9,6 +8,7 @@ SRC	= csv.c drawille.c font.c font7.c font8.c font13.c util.c scale.c
 
 all: $(BIN)
 
+${SRC:.c=.o} ${BIN:=.o}: arg.h def.h Makefile
 ${BIN}: ${SRC:.c=.o} ${BIN:=.o}
 	${CC} $(LFLAGS) -o $@ $@.o ${SRC:.c=.o} $(LIB)
 

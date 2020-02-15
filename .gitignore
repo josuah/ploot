@@ -1,4 +1,5 @@
 *.o
 *.core
+ploot-braille
 ploot-farbfeld
 ploot-feed

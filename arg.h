@@ -1,8 +1,6 @@
 #ifndef ARG_H
 #define ARG_H
 
-extern char const	*arg0;
-
 #define ARG_SWITCH(argc, argv)						\
 	arg0 = *argv;							\
 	while (++argv && --argc && **argv == '-' && (*argv)[1])		\

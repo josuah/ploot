@@ -8,48 +8,15 @@
 #include <math.h>
 
 #include "def.h"
+#include "arg.h"
 
-/*
- * Adjust the vertical scale so that it gets possible to 
- */
-static void
-plot_scale(double *min, double *max, int row)
-{
-	double		unit, range, mi;
-
-	range = *max - *min;
-	unit = 1;
-
-	/* Zoom until it fills the canvas. */
-	for (; (row - 1) * unit > range; unit /= 10)
-		continue;
-
-	/* Dezoom until it fits the canvas. */
-	for (; (row - 1) * unit < range; unit *= 10)
-		continue;
-
-	/* Fine tune. */
-	if ((row - 1) * unit / 5 > range)
-		unit /= 5;
-	if ((row - 1) * unit / 4 > range)
-		unit /= 4;
-	if ((row - 1) * unit / 2 > range)
-		unit /= 2;
-
-	/* Align the minimum (and the zero). */
-	for (mi = 0; mi > *min - unit; mi -= unit)
-		continue;
-
-	/* Update the displayed minimal and maximal. */
-	*min = mi;
-	*max = mi + unit * row;
-}
+char const	*arg0 = NULL;
 
 /*
  * Return the step between two values.
  */
 static int
-plot_time_interval(time_t step)
+braille_time_interval(time_t step)
 {
 	time_t		scale[] = {
 		1, 5, 2, 10, 20, 30, 60, 60*2, 60*5, 60*10, 60*20, 60*30,
@@ -65,136 +32,142 @@ plot_time_interval(time_t step)
 }
 
 static size_t
-plot_axis_x(char *buf, size_t sz, time_t step, time_t t2, int col)
+braille_axis_x(FILE *fp, time_t step, time_t tmax, int col)
 {
 	int		x, prec;
 	char		tmp[sizeof("MM/DD HH:MM")], *fmt;
 	size_t		n;
 	time_t		t, interval;
 
-	interval = plot_time_interval(step);
+	interval = braille_time_interval(step);
 	fmt = (step < 3600 * 12) ? "^%H:%M:%S" :
 	    (step < 3600 * 24) ? "^%m/%d %H:%M" :
 	    "^%Y/%m/%d";
 	n = x = 0;
 
-	t = t2 - col * 2 * step;
+	t = tmax - col * 2 * step;
 	t += interval - t % interval;
-	for (; t < t2; t += interval) {
+	for (; t < tmax; t += interval) {
 		strftime(tmp, sizeof tmp, fmt, localtime(&t));
-		x = ((t - t2) / 2 + col * step) / step;
+		x = ((t - tmax) / 2 + col * step) / step;
 		prec = x - n + strlen(tmp);
-		assert((n += snprintf(buf+n, sz-n, "%*s", prec, tmp)) <= sz);
+		fprintf(fp, "%*s", prec, tmp);
 	}
-	assert((n += strlcpy(buf+n, "\n", sz-n)) < sz);
-	return n;
+	fputc('\n', fp);
+	return 1;
 }
 
 /*
  * Plot a single line out of the y axis, at row <r> out of <rows>.
  */
-static size_t
-plot_axis_y(char *buf, size_t sz, double min, double max, int r, int rows)
+static void
+braille_axis_y(FILE *fp, double min, double max, int r, int rows)
 {
-	size_t		i;
 	char		tmp[10] = "", *s;
 	double		val;
 
 	val = (max - min) * (rows - r) / rows + min;
-	humanize(tmp, sizeof tmp, val);
+	humanize(tmp, val);
 	s = (r == 0) ? "┌" :
 	    (r == rows - 1) ? "└" :
 	    "├";
-	i = snprintf(buf, sz, "%s%-6s ", s, tmp);
-	return (i > sz) ? (sz) : (i);
+	fprintf(fp, "%s%-6s ", s, tmp);
 }
 
-static char *
-plot_render(struct drawille *drw, double min, double max, time_t step, time_t t2)
+static int
+braille_render(struct drawille *drw, FILE *fp, time_t tmin, time_t tmax)
 {
-	char		*buf;
-	size_t		sz;
-	size_t		n;
+	char		buf[LINE_MAX];
 
 	/* Render the plot line by line. */
-	sz = drw->row * (20 + drw->col * 3 + 1) + 1;
-	sz += drw->col + 1 + 100000;
-	if ((buf = calloc(sz, 1)) == NULL)
-		goto err;
-	n = 0;
 	for (int row = 0; row < drw->row; row++) {
-		n += drawille_fmt_row(drw, buf+n, sz-n, row);
-		n += plot_axis_y(buf+n, sz-n, min, max, row, drw->row);
-		n += strlcpy(buf+n, "\n", sz-n);
+		drawille_fmt_row(drw, buf, sizeof buf, row);
+		braille_axis_y(fp, tmin, tmax, row, drw->row);
+		fputc('\n', fp);
 	}
-	plot_axis_x(buf+n, sz-n, step, t2, drw->col);
-	return buf;
-err:
-	errno = ENOBUFS;
-	free(buf);
-	return NULL;
+	return 0;
 }
 
 /*
  * Plot the body as an histogram interpolating the gaps and include
  * a vertical and horizontal axis.
  */
-static char *
-plot_hist(struct vlist *vl, time_t t2, struct drawille *drw)
+static int
+braille_hist(struct vlist *vl, FILE *fp, time_t tmin, time_t tmax, int row, int col)
 {
 	int		x, y, zero, shift;
-	double		min, max, val;
-	time_t		t1, t;
-
-	/* Adjust the y scale. */
-	shift = min = max = 0;
-	timeserie_stats(vl, &min, &max);
-	if (drw->row > 1) {
-		shift = 2;  /* Align values to the middle of the scale: |- */
-		plot_scale(&min, &max, drw->row);
-	}
-	zero = timeserie_ypos(0, min, max, drw->row*4) - shift;
-
-	/* Adjust the x scale. */
-	t2 = t2 + vl->step - t2 % vl->step;
-	t1 = t2 - vl->step * vl->len;
-
-	/* Plot the data in memory in <drw> starting from the end (t2). */
-	t = t2;
-	for (x = drw->col * 2; x > 0; x--) {
-		val = timeserie_get(vl, t);
-		if (!isnan(val)) {
-			y = timeserie_ypos(val, min, max, drw->row*4) - shift;
-			drawille_dot_hist(drw, x, y, zero);
-		}
-		t -= vl->step;
-	}
-
-	return plot_render(drw, min, max, vl->step, t2);
-}
-
-static char *
-plot(struct vlist *vl, time_t t2, int row, int col)
-{
+	double		*v, vmin, vmax;
+	time_t		*t;
+	size_t		n;
 	struct drawille	*drw;
-	size_t		len;
-	char		*buf;
-
-	len = 500;
-	buf = NULL;
-	drw = NULL;
-	col -= 8;
-
-	if (timeserie_read(vl) == -1)
-		goto err;
 
 	if ((drw = drawille_new(row, col)) == NULL)
-		goto err;
+		err(1, "allocating drawille canvas");
 
-	buf = plot_hist(vl, t2, drw);
-err:
-	if (buf == NULL)
-		timedb_close(&vl->db);
+	shift = (drw->row > 1) ? (2) : (0);  /* center values on "|-" marks */
+	vmin = vmax = 0;
+	zero = scale_ypos(0, vmin, vmax, drw->row*4) - shift;
+	v = vl->v;
+	t = vl->t;
+	n = vl->n;
+	for (; n > 0; n--, t++, v++) {
+		if (isnan(*v))  /* XXX: better handling? */
+			continue;
+		y = scale_ypos(*v, vmin, vmax, drw->row * 4) - shift;
+		x = scale_xpos(*t, tmin, tmax, drw->col * 2);
+		drawille_dot_hist(drw, x, y, zero);
+	}
+	if (braille_render(drw, fp, tmin, tmax) == -1)
+		err(1, "rendering braille canvas");
 	free(drw);
-	return buf;
+	return 0;
+}
+
+static int
+plot(struct vlist *vl, FILE *fp, size_t ncol, int row, int col)
+{
+	size_t		len;
+	double		vmin, vmax, vstep;
+	time_t		tmin, tmax, tstep;
+
+	len = 500;
+	col -= 8;
+
+	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
+
+	if (braille_hist(vl, fp, tmin, tmax, row, col) == -1)
+		err(1, "allocating drawille canvas");
+	braille_axis_x(fp, tstep, tmax, col);
+	return 0;
+}
+
+static void
+usage(void)
+{
+	fprintf(stderr, "usage: %s\n", arg0);
+	exit(1);
+}
+
+int
+main(int argc, char **argv)
+{
+	struct vlist	*vl;
+	char		labels[LINE_MAX];
+	size_t		ncol;
+
+	ARG_SWITCH(argc, argv) {
+	default:
+		usage();
+	}
+
+	if (argc > 0)
+		usage();
+
+	csv_labels(stdin, labels, &vl, &ncol);
+	csv_values(stdin, vl, ncol);
+
+	plot(vl, stdout, ncol, 20, 80);
+
+	free(vl);
+	return 1;
 }

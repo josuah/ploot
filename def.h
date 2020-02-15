@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -37,8 +38,8 @@ struct vlist {
 /* csv.c */
 
 void		csv_addrow		(struct vlist *, size_t, char *);
-void		csv_values		(struct vlist *, size_t);
-void		csv_labels		(struct vlist *, char **, char *);
+void		csv_labels		(FILE *, char *, struct vlist **, size_t *);
+void		csv_values		(FILE *, struct vlist *, size_t);
 
 /* drawille.c */
 
@@ -61,12 +62,28 @@ struct font font13;
 struct font font7;
 struct font font8;
 
+/* ploot-braille.c */
+
+char const	*arg0;
+
+/* ploot-farbfeld.c */
+
+char const		*arg0;
+
+/* ploot-feed.c */
+
+char const		*arg0;
+
 /* scale.c */
 
+int		scale_ypos		(double, double, double, int);
+int		scale_xpos		(time_t, time_t, time_t, int);
+void		scale_vminmax		(double *, double *, int);
 void		scale			(struct vlist *, int, time_t *, time_t *, time_t *, double *, double *, double *);
 
 /* util.c */
 
+size_t		strlcpy			(char *, const char *, size_t);
 void		put3utf			(long);
 char *		strsep			(char **, const char *);
 void		estriplf		(char *);
@@ -74,3 +91,6 @@ double		eatof			(char *);
 long		eatol			(char *);
 char *		esfgets			(char *, size_t, FILE *);
 int		humanize		(char *, double);
+void		vlog			(char const *, char const *, va_list);
+void		warn			(char const *, ...);
+void		err			(int, char const *, ...);

@@ -13,9 +13,9 @@
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
-int		wflag = 80;
-int		width = 0;
-char const	*arg0 = NULL;
+char const		*arg0 = NULL;
+static int		wflag = 80;
+static int		width = 0;
 
 /*
  * Turn the bit at position (row, col) on in the .
@@ -139,8 +139,11 @@ plot(char labels[LINE_MAX], double *max, int ncol)
 	last_epoch = epoch = 0;
 
 	for (n = 0;; n = (n == 25 ? 0 : n + 1)) {
-		if (n == 0)
-			put_time(0, 0, 2), fputs(labels, stdout), puts("│");
+		if (n == 0) {
+			put_time(0, 0, 2);
+			fputs(labels, stdout);
+			puts("│");
+		}
 
 		epoch = plot_line(out, max, ncol);
 		put_time(epoch, last_epoch, n);
@@ -224,7 +227,6 @@ main(int argc, char **argv)
 	int		ncol, nmax;
 	char		*labv[LINE_MAX / 2], labels[LINE_MAX];
 
-	setvbuf(stdin, NULL, _IOLBF, 0);
 	nmax = parse_args(argc, argv, max);
 	ncol = read_labels(labv);
 	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");

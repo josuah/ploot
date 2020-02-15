@@ -1,3 +1,7 @@
+/*
+ * Terminal-based plotting using drawille character, aka drawille.
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,14 +9,10 @@
 
 #include "def.h"
 
-/*
- * Terminal-based plotting using drawille character, aka drawille.
- */
-
 /* parameters used to draw a line */
 struct line {
-	int x0, y0, x1, y1;		/* point of the line */
-	int dx, dy, sx, sy, err;	/* parameters for the algorythm */
+	int		x0, y0, x1, y1;		/* point of the line */
+	int		dx, dy, sx, sy, err;	/* parameters for the algorythm */
 };
 
 /*
@@ -36,7 +36,7 @@ drawille_cell_dot(uint8_t *cell, int row, int col)
 static size_t
 drawille_cell_utf(uint8_t cell, char *utf)
 {
-	long rune;
+	long		rune;
 
 	rune = 10240 + cell;
 	utf[0] = (char)(0xe0 | (0x0f & (rune >> 12)));	/* 1110xxxx */
@@ -54,8 +54,8 @@ drawille_get(struct drawille *drw, int row, int col)
 size_t
 drawille_fmt_row(struct drawille *drw, char *buf, size_t sz, int row)
 {
-	char txt[] = "xxx";
-	size_t n;
+	char		txt[] = "xxx";
+	size_t		n;
 
 	n = 0;
 	for (int col = 0; col < drw->col; col++) {
@@ -82,7 +82,7 @@ drawille_dot(struct drawille *drw, int x, int y)
 struct drawille *
 drawille_new(int row, int col)
 {
-	struct drawille *drw;
+	struct drawille	*drw;
 
 	if ((drw = calloc(sizeof(struct drawille) + row * col, 1)) == NULL)
 		return NULL;
@@ -108,10 +108,10 @@ drawille_line_init(struct line *l, int x0, int y0, int x1, int y1)
 static int
 drawille_line_next(struct line *l)
 {
-	int e;
+	int		e;
 
 	if (l->x0 == l->x1 && l->y0 == l->y1)
-		return 0;
+		return -1;
 
 	e = l->err;
 	if (e > -l->dx) {
@@ -122,13 +122,13 @@ drawille_line_next(struct line *l)
 		l->y0 += l->sy;
 		l->err += l->dx;
 	}
-	return 1;
+	return 0;
 }
 
 void
 drawille_line(struct drawille *drw, int x0, int y0, int x1, int y1)
 {
-	struct line l;
+	struct line	l;
 
 	drawille_line_init(&l, x0, y0, x1, y1);
 	do {
@@ -139,8 +139,8 @@ drawille_line(struct drawille *drw, int x0, int y0, int x1, int y1)
 void
 drawille_line_hist(struct drawille *drw, int x0, int y0, int x1, int y1, int zero)
 {
-	struct line l;
-	int sign;
+	struct line	l;
+	int		sign;
 
 	drawille_line_init(&l, x0, y0, x1, y1);
 	do {
@@ -153,7 +153,7 @@ drawille_line_hist(struct drawille *drw, int x0, int y0, int x1, int y1, int zer
 void
 drawille_dot_hist(struct drawille *drw, int x, int y, int zero)
 {
-	int sign;
+	int		sign;
 
 	sign = (y > zero) ? (-1) : (+1);
 	for (; y != zero + sign; y += sign)
@@ -163,8 +163,8 @@ drawille_dot_hist(struct drawille *drw, int x, int y, int zero)
 static int
 drawille_text_glyph(struct drawille *drw, int x, int y, struct font *font, char c)
 {
-	int width;
-	char *glyph;
+	int		width;
+	char		*glyph;
 
 	if ((unsigned)c > 127)
 		glyph = font->glyph[0];
@@ -187,7 +187,6 @@ drawille_text(struct drawille *drw, int x, int y, struct font *font, char *s)
 {
 	if (drw->row*4 < font->height)
 		return NULL;
-
 	for (; *s != '\0' && x < drw->col/2; s++, x++)
 		x += drawille_text_glyph(drw, x, y, font, *s);
 	return s;

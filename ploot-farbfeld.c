@@ -13,7 +13,6 @@
 #include <math.h>
 
 #include "arg.h"
-#include "log.h"
 #include "def.h"
 
 #define MARGIN		4
@@ -66,9 +65,9 @@ struct canvas {
 	struct color	*buf;
 };
 
-char const		*arg0;
-static char		*tflag	= "";
-static char		*uflag	= "";
+char const		*arg0 = NULL;
+static char		*tflag = "";
+static char		*uflag = "";
 static struct font	*font = &font13;
 
 static struct cname cname[] = {

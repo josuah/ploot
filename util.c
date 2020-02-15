@@ -1,11 +1,23 @@
-#include <string.h>
-#include <errno.h>
-#include <stdio.h>
-#include <limits.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "def.h"
+
+size_t
+strlcpy(char *buf, const char *str, size_t sz)
+{
+	size_t		len, cpy;
+
+	cpy = ((len = strlen(str)) > sz) ? (sz) : (len);
+	memcpy(buf, str, cpy);
+	buf[sz - 1] = '\0';
+	return len;
+}
 
 void
 put3utf(long rune)
@@ -79,7 +91,7 @@ esfgets(char *buf, size_t n, FILE *file)
 }
 
 /*
- * Set 'str' to a human-readable form of 'num' with always a width of 8 (+ 1
+ * Set 'str' to a human-readable form of 'num' with always a width of 8 (+1 for
  * the '\0' terminator).  Buffer overflow is ensured not to happen due to the
  * max size of a double.  Return the exponent.
  */
@@ -101,4 +113,37 @@ humanize(char *str, double val)
 		str[0] = ' ';
 
 	return exp * 3;
+}
+
+void
+vlog(char const *base, char const *fmt, va_list va)
+{
+	fprintf(stderr, "%s: ", base);
+	vfprintf(stderr, fmt, va);
+	if (errno)
+		fprintf(stderr, ": %s", strerror(errno));
+	fputc('\n', stderr);
+	fflush(stderr);
+	errno = 0;  /* avoid repeating the error in loop */
+}
+
+void
+warn(char const *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	vlog(arg0, fmt, va);
+	va_end(va);
+}
+
+void
+err(int e, char const *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	vlog(arg0, fmt, va);
+	va_end(va);
+	exit(e);
 }
