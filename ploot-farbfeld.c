@@ -65,10 +65,10 @@ struct canvas {
 	struct color	*buf;
 };
 
-char const		*arg0 = NULL;
-static char		*tflag = "";
-static char		*uflag = "";
-static struct font	*font = &font13;
+char const	*arg0 = NULL;
+static char	*tflag = "";
+static char	*uflag = "";
+static struct font *font = &font13;
 
 static struct cname cname[] = {
 	/* name       red     green   blue    alpha */

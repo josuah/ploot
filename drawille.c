@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "def.h"
 
@@ -52,7 +53,7 @@ drawille_get(struct drawille *drw, int row, int col)
 }
 
 size_t
-drawille_fmt_row(struct drawille *drw, char *buf, size_t sz, int row)
+drawille_put_row(struct drawille *drw, FILE *fp, int row)
 {
 	char		txt[] = "xxx";
 	size_t		n;
@@ -60,7 +61,7 @@ drawille_fmt_row(struct drawille *drw, char *buf, size_t sz, int row)
 	n = 0;
 	for (int col = 0; col < drw->col; col++) {
 		drawille_cell_utf(drawille_get(drw, row, col), txt);
-		n += snprintf(buf+n, sz-n, "%s", txt);
+		n += fputs(txt, fp);
 	}
 	return n;
 }
@@ -111,7 +112,7 @@ drawille_line_next(struct line *l)
 	int		e;
 
 	if (l->x0 == l->x1 && l->y0 == l->y1)
-		return -1;
+		return 0;
 
 	e = l->err;
 	if (e > -l->dx) {
@@ -122,7 +123,7 @@ drawille_line_next(struct line *l)
 		l->y0 += l->sy;
 		l->err += l->dx;
 	}
-	return 0;
+	return 1;
 }
 
 void
@@ -137,27 +138,54 @@ drawille_line(struct drawille *drw, int x0, int y0, int x1, int y1)
 }
 
 void
-drawille_line_hist(struct drawille *drw, int x0, int y0, int x1, int y1, int zero)
+drawille_histogram_dot(struct drawille *drw, int x, int y, int zero)
 {
-	struct line	l;
 	int		sign;
 
-	drawille_line_init(&l, x0, y0, x1, y1);
-	do {
-		sign = (l.y0 > zero) ? (-1) : (+1);
-		for (int y = l.y0; y != zero + sign; y += sign)
-			drawille_dot(drw, l.x0, y);
-	} while (drawille_line_next(&l));
+	sign = (y > zero) ? (+1) : (-1);
+	for (; y != zero + sign; y -= sign)
+		drawille_dot(drw, x, y);
 }
 
 void
-drawille_dot_hist(struct drawille *drw, int x, int y, int zero)
+drawille_histogram_line(struct drawille *drw, int x0, int y0, int x1, int y1, int zero)
 {
-	int		sign;
+	struct line	l;
 
-	sign = (y > zero) ? (-1) : (+1);
-	for (; y != zero + sign; y += sign)
-		drawille_dot(drw, x, y);
+	drawille_line_init(&l, x0, y0, x1, y1);
+	do {
+		drawille_histogram_dot(drw, l.x0, l.y0, zero);
+	} while (drawille_line_next(&l));
+}
+
+/*
+ * Plot the body as an histogram interpolating the gaps and include
+ * a vertical and horizontal axis.
+ */
+int
+drawille_histogram(struct vlist *vl, struct drawille *drw,
+	time_t tmin, time_t tmax, double vmin, double vmax)
+{
+	int		x, xprev, y, yprev, zero;
+	double		*v;
+	time_t		*t;
+	size_t		n;
+
+	zero = scale_ypos(0, vmin, vmax, drw->row*4);
+	v = vl->v;
+	t = vl->t;
+	n = vl->n;
+	for (; n > 0; n--, t++, v++) {
+		if (isnan(*v))  /* XXX: better handling? */
+			continue;
+		y = scale_ypos(*v, vmin, vmax, drw->row * 4);
+		x = scale_xpos(*t, tmin, tmax, drw->col * 2);
+		if (n < vl->n)
+			drawille_histogram_line(drw, xprev, yprev, x, y, zero);
+		xprev = x;
+		yprev = y;
+	}
+	return 0;
 }
 
 static int

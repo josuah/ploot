@@ -13,9 +13,9 @@
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
-char const		*arg0 = NULL;
-static int		wflag = 80;
-static int		width = 0;
+char const	*arg0 = NULL;
+static int	wflag = 80;
+static int	width = 0;
 
 /*
  * Turn the bit at position (row, col) on in the .

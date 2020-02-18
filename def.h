@@ -35,62 +35,34 @@ struct vlist {
 	char		*label;		/* for the legend */
 };
 
-/* csv.c */
-
+/**/
 void		csv_addrow		(struct vlist *, size_t, char *);
 void		csv_labels		(FILE *, char *, struct vlist **, size_t *);
 void		csv_values		(FILE *, struct vlist *, size_t);
-
-/* drawille.c */
-
-size_t		drawille_fmt_row	(struct drawille *, char *, size_t, int);
+size_t		drawille_put_row	(struct drawille *, FILE *, int);
 void		drawille_dot		(struct drawille *, int, int);
 struct drawille *drawille_new		(int, int);
 void		drawille_line		(struct drawille *, int, int, int, int);
-void		drawille_line_hist	(struct drawille *, int, int, int, int, int);
-void		drawille_dot_hist	(struct drawille *, int, int, int);
+void		drawille_histogram_dot	(struct drawille *, int, int, int);
+void		drawille_histogram_line	(struct drawille *, int, int, int, int, int);
+int		drawille_histogram	(struct vlist *, struct drawille *, time_t, time_t, double, double);
 char *		drawille_text		(struct drawille *, int, int, struct font *, char *);
-
-/* font.c */
-
 size_t		font_width		(struct font *, int);
 size_t		font_strlen		(struct font *, char *);
-
-/* font*.c */
-
-struct font font13;
-struct font font7;
-struct font font8;
-
-/* ploot-braille.c */
-
+struct font	font13;
+struct font	font7;
+struct font	font8;
 char const	*arg0;
-
-/* ploot-farbfeld.c */
-
-char const		*arg0;
-
-/* ploot-feed.c */
-
-char const		*arg0;
-
-/* scale.c */
-
 int		scale_ypos		(double, double, double, int);
 int		scale_xpos		(time_t, time_t, time_t, int);
 void		scale_vminmax		(double *, double *, int);
 void		scale			(struct vlist *, int, time_t *, time_t *, time_t *, double *, double *, double *);
-
-/* util.c */
-
 size_t		strlcpy			(char *, const char *, size_t);
 void		put3utf			(long);
 char *		strsep			(char **, const char *);
 void		estriplf		(char *);
 double		eatof			(char *);
 long		eatol			(char *);
-char *		esfgets			(char *, size_t, FILE *);
 int		humanize		(char *, double);
-void		vlog			(char const *, char const *, va_list);
-void		warn			(char const *, ...);
-void		err			(int, char const *, ...);
+
+#endif

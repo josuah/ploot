@@ -77,19 +77,6 @@ eatol(char *str)
 	return atol(str);
 }
 
-char *
-esfgets(char *buf, size_t n, FILE *file)
-{
-	if (fgets(buf, n, file) == NULL) {
-		if (ferror(stdin))
-			perror("fread from stdin"), exit(1);
-		else
-			return NULL;
-	}
-	estriplf(buf);
-	return buf;
-}
-
 /*
  * Set 'str' to a human-readable form of 'num' with always a width of 8 (+1 for
  * the '\0' terminator).  Buffer overflow is ensured not to happen due to the
@@ -113,37 +100,4 @@ humanize(char *str, double val)
 		str[0] = ' ';
 
 	return exp * 3;
-}
-
-void
-vlog(char const *base, char const *fmt, va_list va)
-{
-	fprintf(stderr, "%s: ", base);
-	vfprintf(stderr, fmt, va);
-	if (errno)
-		fprintf(stderr, ": %s", strerror(errno));
-	fputc('\n', stderr);
-	fflush(stderr);
-	errno = 0;  /* avoid repeating the error in loop */
-}
-
-void
-warn(char const *fmt, ...)
-{
-	va_list va;
-
-	va_start(va, fmt);
-	vlog(arg0, fmt, va);
-	va_end(va);
-}
-
-void
-err(int e, char const *fmt, ...)
-{
-	va_list va;
-
-	va_start(va, fmt);
-	vlog(arg0, fmt, va);
-	va_end(va);
-	exit(e);
 }
