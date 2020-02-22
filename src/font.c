@@ -15,6 +15,6 @@ font_strlen(struct font *ft, char *s)
 
 	len = 0;
 	for (; *s != '\0'; s++)
-		len += font_width(ft, *s);
+		len += font_width(ft, *s) + 1;
 	return len;
 }

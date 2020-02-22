@@ -19,7 +19,7 @@ char const *arg0 = NULL;
  * Plot the body as an histogram interpolating the gaps and include
  * a vertical and horizontal axis.
  */
-int
+static int
 braille_histogram(struct csv *vl, struct drawille *drw,
 	time_t tmin, time_t tmax, double vmin, double vmax)
 {
@@ -37,7 +37,7 @@ braille_histogram(struct csv *vl, struct drawille *drw,
 			continue;
 		y = scale_ypos(*v, vmin, vmax, drw->row * 4);
 		x = scale_xpos(*t, tmin, tmax, drw->col * 2);
-		if (n < vl->n)
+		if (n < vl->n)  /* only plot when xprev, yprev are set */
 			drawille_histogram_line(drw, xprev, yprev, x, y, zero);
 		xprev = x;
 		yprev = y;
@@ -93,8 +93,10 @@ braille_axis_y(FILE *fp, double vmin, double vmax, int r, int rows)
 static int
 braille_render(struct drawille *drw, FILE *fp, double vmin, double vmax)
 {
-	for (int row = 0; row < drw->row; row++) {
-		drawille_put_row(drw, fp, row);
+	int row;
+
+	for (row = 0; row < drw->row; row++) {
+		drawille_put_row(fp, drw, row);
 		braille_axis_y(fp, vmin, vmax, row, drw->row);
 		fprintf(fp, "\n");
 	}
@@ -113,17 +115,24 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 	col -= 8;
 
 	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
-	warn("vstep=%lf vstep=%ld", vstep, tstep);
+	row -= ncol - 1;	/* room for the labels and the scale */
+	row /= ncol;		/* plot <ncol> times */
+	row = MAX(row, 3);	/* readable */
 
-	if ((drw = drawille_new(row, col)) == NULL)
-		fatal(1, "allocating drawille canvas");
-	if (braille_histogram(vl, drw, tmin, tmax, vmin, vmax) == -1)
-		fatal(1, "allocating drawille canvas");
-	if (braille_render(drw, fp, vmin, vmax) == -1)
-		fatal(1, "rendering braille canvas");
+	debug("vstep=%lf vstep=%ld ncol=%zu row=%zu", vstep, tstep, ncol, row);
+
+	for (; ncol > 0; vl++, ncol--) {
+		assert(drw = drawille_new(row, col));
+		fprintf(fp, " %s\n", vl->label);
+		if (braille_histogram(vl, drw, tmin, tmax, vmin, vmax) == -1)
+			fatal(1, "allocating drawille canvas");
+		if (braille_render(drw, fp, vmin, vmax) == -1)
+			fatal(1, "rendering braille canvas");
+		free(drw);
+	}
 	if (braille_axis_x(fp, tmin, tmax, tstep, col) == -1)
 		fatal(1, "printing x axis");;
-	free(drw);
+
 }
 
 static void
@@ -138,11 +147,27 @@ main(int argc, char **argv)
 {
 	struct csv *vl;
 	size_t ncol;
-	int c;
+	int c, rows, cols;
 
+	rows = 20, cols = 80;
 	optind = 0;
-	while ((c = getopt(argc, argv, "")) > -1) {
+	while ((c = getopt(argc, argv, "r:c:")) > -1) {
 		switch (c) {
+		case 'r':
+			rows = atoi(optarg);
+			if (rows < 1) {
+				error("invalid number of rows");
+				usage();
+			}
+			break;
+		case 'c':
+			cols = atoi(optarg);
+			if (rows < 1) {
+				error("invalid number of columns");
+				usage();
+			}
+			break;
+
 		default:
 			usage();
 		}
@@ -153,12 +178,10 @@ main(int argc, char **argv)
 	if (argc > 0)
 		usage();
 
-	debug("label");
 	csv_labels(stdin, &vl, &ncol);
-	debug("values");
 	csv_values(stdin, vl, ncol);
 
-	plot(vl, stdout, ncol, 20, 80);
+	plot(vl, stdout, ncol, rows, cols);
 
 	free(vl);
 	return 1;

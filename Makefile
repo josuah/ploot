@@ -1,10 +1,10 @@
 include config.mk
 
 src = src/csv.c src/drawille.c src/ffplot.c src/font.c src/font13.c \
-	src/font7.c src/font8.c src/log.c src/scale.c src/tool.c
+	src/font8.c src/log.c src/scale.c src/tool.c
 inc = src/csv.h src/drawille.h src/ffplot.h src/font.h src/log.h \
 	src/scale.h src/tool.h
-bin = ploot-farbfeld ploot-feed ploot-braille
+bin = ploot-farbfeld ploot-feed ploot-braille ploot-text
 obj = ${src:.c=.o}
 lib = -lm
 

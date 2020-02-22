@@ -17,7 +17,7 @@ struct drawille {
 };
 
 /**/
-size_t		drawille_put_row	(struct drawille *, FILE *, int);
+size_t		drawille_put_row	(FILE *, struct drawille *, int);
 void		drawille_dot		(struct drawille *, int, int);
 struct drawille *drawille_new		(int, int);
 void		drawille_line		(struct drawille *, int, int, int, int);

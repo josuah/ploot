@@ -12,9 +12,7 @@
 size_t		strlcpy			(char *, const char *, size_t);
 void		put3utf			(long);
 char *		strsep			(char **, const char *);
-void		estriplf		(char *);
-double		eatof			(char *);
-long		eatol			(char *);
+void		strchomp		(char *);
 int		humanize		(char *, double);
 
 #endif

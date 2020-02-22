@@ -1,11 +1,12 @@
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <string.h>
-#include <ctype.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "tool.h"
@@ -57,9 +58,12 @@ plot_row(long *out, char *line, double *max, int nrow, int ncol)
 	int n;
 	char *tok;
 
-	if ((tok = strsep(&line, ",")) == NULL)
+	tok = strsep(&line, ",");
+	if (!tok)
 		fatal(100, "*** missing epoch value");
-	epoch = eatol(tok);
+	epoch = strtol(tok, NULL, 10);
+	if (errno)
+		error("*** parsing epoch '%s'", tok);
 
 	for (n = 0; (tok = strsep(&line, ",")) != NULL; n++) {
 		if (n >= ncol)
@@ -92,7 +96,7 @@ plot_line(long *out, double *max, int ncol)
 		memcpy(o, &rune, sizeof(rune));
 	out++;
 
-	sz = 0;
+	line = NULL, sz = 0;
 	for (nrow = 0; nrow < 4; nrow++) {
 		if (getline(&line, &sz, stdin) == -1) {
 			if (ferror(stdin))
@@ -172,12 +176,13 @@ read_labels(char **labv)
 	char *cp, *line, *tok;
 	size_t sz;
 
-	sz = 0;
+	line = NULL, sz = 0;
 	if (getline(&line, &sz, stdin) == -1) {
 		if (ferror(stdin))
 			fatal(111, "reading labels from stdin");
 		fatal(100, "missing label line", stderr);
 	}
+	strchomp(line);
 	cp = line;
 
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
@@ -189,7 +194,6 @@ read_labels(char **labv)
 
 	if (ncol < 1)
 		fatal(100, "no label found");
-	free(line);
 	return ncol;
 }
 
@@ -236,8 +240,11 @@ main(int argc, char **argv)
 		usage();
 
 	nmax = argc;
-	for (m = max; argc > 0; argc--, argv++, m++)
-		*m = eatof(*argv);
+	for (m = max; argc > 0; argc--, argv++, m++) {
+		*m = strtod(*argv, NULL);
+		if (errno)
+			error("*** parsing float '%s'", *argv);
+	}
 
 	ncol = read_labels(labv);
 	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");

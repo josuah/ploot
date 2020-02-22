@@ -8,6 +8,8 @@
 
 #include "font.h"
 
+#include "log.h" /* XXX */
+
 /*
  * Terminal-based plotting using drawille character, aka drawille.
  */
@@ -55,7 +57,7 @@ drawille_get(struct drawille *drw, int row, int col)
 }
 
 size_t
-drawille_put_row(struct drawille *drw, FILE *fp, int row)
+drawille_put_row(FILE *fp, struct drawille *drw, int row)
 {
 	char txt[] = "xxx";
 	size_t n;
@@ -145,8 +147,9 @@ drawille_histogram_dot(struct drawille *drw, int x, int y, int zero)
 	int sign;
 
 	sign = (y > zero) ? (+1) : (-1);
-	for (; y != zero + sign; y -= sign)
+	for (; y != zero; y -= sign)
 		drawille_dot(drw, x, y);
+	drawille_dot(drw, x, y);
 }
 
 void
@@ -187,7 +190,7 @@ drawille_text(struct drawille *drw, int x, int y, struct font *font, char *s)
 {
 	if (drw->row*4 < font->height)
 		return NULL;
-	for (; *s != '\0' && x < drw->col/2; s++, x++)
+	for (; *s != '\0' && x < drw->col * 2; s++, x++)
 		x += drawille_text_glyph(drw, x, y, font, *s);
 	return s;
 }

@@ -16,21 +16,21 @@ C(error) = {
 0};
 
 C(A) = {
-	_,_,_,_,
 	_,X,X,_,
 	X,_,_,X,
 	X,_,_,X,
 	X,X,X,X,
+	X,_,_,X,
 	X,_,_,X,
 	_,_,_,_,
 	_,_,_,_,
 0};
 
 C(B) = {
-	_,_,_,_,
 	X,X,X,_,
 	X,_,_,X,
 	X,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,X,X,_,
 	_,_,_,_,
@@ -38,8 +38,8 @@ C(B) = {
 0};
 
 C(C) = {
-	_,_,_,_,
 	_,X,X,X,
+	X,_,_,_,
 	X,_,_,_,
 	X,_,_,_,
 	X,_,_,_,
@@ -49,8 +49,8 @@ C(C) = {
 0};
 
 C(D) = {
-	_,_,_,_,
 	X,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
@@ -60,10 +60,10 @@ C(D) = {
 0};
 
 C(E) = {
-	_,_,_,_,
 	X,X,X,X,
 	X,_,_,_,
 	X,X,X,_,
+	X,_,_,_,
 	X,_,_,_,
 	X,X,X,X,
 	_,_,_,_,
@@ -71,8 +71,8 @@ C(E) = {
 0};
 
 C(F) = {
-	_,_,_,_,
 	X,X,X,X,
+	X,_,_,_,
 	X,_,_,_,
 	X,X,X,_,
 	X,_,_,_,
@@ -82,8 +82,8 @@ C(F) = {
 0};
 
 C(G) = {
-	_,_,_,_,
 	_,X,X,X,
+	X,_,_,_,
 	X,_,_,_,
 	X,_,X,X,
 	X,_,_,X,
@@ -93,7 +93,7 @@ C(G) = {
 0};
 
 C(H) = {
-	_,_,_,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,X,X,X,
@@ -104,8 +104,8 @@ C(H) = {
 0};
 
 C(I) = {
-	_,_,_,
 	X,X,X,
+	_,X,_,
 	_,X,_,
 	_,X,_,
 	_,X,_,
@@ -115,8 +115,8 @@ C(I) = {
 0};
 
 C(J) = {
-	_,_,_,_,
 	_,X,X,X,
+	_,_,X,_,
 	_,_,X,_,
 	_,_,X,_,
 	_,_,X,_,
@@ -126,9 +126,9 @@ C(J) = {
 0};
 
 C(K) = {
-	_,_,_,_,
 	X,_,_,X,
 	X,_,X,_,
+	X,X,_,_,
 	X,X,_,_,
 	X,_,X,_,
 	X,_,_,X,
@@ -137,7 +137,7 @@ C(K) = {
 0};
 
 C(L) = {
-	_,_,_,_,
+	X,_,_,_,
 	X,_,_,_,
 	X,_,_,_,
 	X,_,_,_,
@@ -148,10 +148,10 @@ C(L) = {
 0};
 
 C(M) = {
-	_,_,_,_,_,
 	X,_,_,_,X,
 	X,X,_,X,X,
 	X,_,X,_,X,
+	X,_,_,_,X,
 	X,_,_,_,X,
 	X,_,_,_,X,
 	_,_,_,_,_,
@@ -159,10 +159,10 @@ C(M) = {
 0};
 
 C(N) = {
-	_,_,_,_,
 	X,_,_,X,
 	X,X,_,X,
-	X,X,X,X,
+	X,X,_,X,
+	X,_,X,X,
 	X,_,X,X,
 	X,_,_,X,
 	_,_,_,_,
@@ -170,8 +170,8 @@ C(N) = {
 0};
 
 C(O) = {
-	_,_,_,_,
 	_,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
@@ -181,8 +181,8 @@ C(O) = {
 0};
 
 C(P) = {
-	_,_,_,_,
 	X,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,X,X,_,
 	X,_,_,_,
@@ -192,8 +192,8 @@ C(P) = {
 0};
 
 C(Q) = {
-	_,_,_,_,
 	_,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,_,X,X,
@@ -203,8 +203,8 @@ C(Q) = {
 0};
 
 C(R) = {
-	_,_,_,_,
 	X,X,X,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,X,X,_,
 	X,_,X,_,
@@ -214,10 +214,10 @@ C(R) = {
 0};
 
 C(S) = {
-	_,_,_,_,
 	_,X,X,X,
 	X,_,_,_,
-	_,X,X,_,
+	_,X,_,_,
+	_,_,X,_,
 	_,_,_,X,
 	X,X,X,_,
 	_,_,_,_,
@@ -225,18 +225,18 @@ C(S) = {
 0};
 
 C(T) = {
-	_,_,_,_,
-	X,X,X,X,
-	_,X,X,_,
-	_,X,X,_,
-	_,X,X,_,
-	_,X,X,_,
-	_,_,_,_,
-	_,_,_,_,
+	X,X,X,X,X,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	_,_,_,_,_,
+	_,_,_,_,_,
 0};
 
 C(U) = {
-	_,_,_,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
@@ -247,7 +247,7 @@ C(U) = {
 0};
 
 C(V) = {
-	_,_,_,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	X,_,X,_,
@@ -258,7 +258,7 @@ C(V) = {
 0};
 
 C(W) = {
-	_,_,_,_,_,
+	X,_,_,_,X,
 	X,_,_,_,X,
 	X,_,_,_,X,
 	X,_,X,_,X,
@@ -269,9 +269,9 @@ C(W) = {
 0};
 
 C(X) = {
-	_,_,_,_,
 	X,_,_,X,
 	X,_,_,X,
+	_,X,X,_,
 	_,X,X,_,
 	X,_,_,X,
 	X,_,_,X,
@@ -280,7 +280,7 @@ C(X) = {
 0};
 
 C(Y) = {
-	_,_,_,_,
+	X,_,_,X,
 	X,_,_,X,
 	X,_,_,X,
 	_,X,X,_,
@@ -291,10 +291,10 @@ C(Y) = {
 0};
 
 C(Z) = {
-	_,_,_,_,
 	X,X,X,X,
 	_,_,_,X,
-	_,X,X,_,
+	_,_,X,_,
+	_,X,_,_,
 	X,_,_,_,
 	X,X,X,X,
 	_,_,_,_,
@@ -707,6 +707,226 @@ C(space) = {
 	_,_,_,
 0};
 
+C(exclam) = {
+	_,X,_,
+	_,X,_,
+	_,X,_,
+	_,X,_,
+	_,_,_,
+	_,X,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(dquote) = {
+	X,_,X,
+	X,_,X,
+	X,_,X,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(hash) = {
+	_,_,_,_,_,
+	_,X,_,X,_,
+	X,X,X,X,X,
+	_,X,_,X,_,
+	X,X,X,X,X,
+	_,X,_,X,_,
+	_,_,_,_,_,
+	_,_,_,_,_,
+0};
+
+C(dollar) = {
+	_,X,_,_,
+	X,X,X,X,
+	X,X,_,_,
+	_,X,X,_,
+	_,X,_,X,
+	X,X,X,X,
+	_,X,_,_,
+	_,_,_,_,
+0};
+
+C(percent) = {
+	_,_,_,_,
+	_,_,_,_,
+	X,_,_,X,
+	_,_,X,_,
+	_,X,_,_,
+	X,_,_,X,
+	_,_,_,_,
+	_,_,_,_,
+0};
+
+C(amp) = {
+	_,X,_,_,
+	X,_,X,_,
+	_,X,_,_,
+	X,_,X,X,
+	X,_,X,_,
+	_,X,X,X,
+	_,_,_,_,
+	_,_,_,_,
+0};
+
+C(squote) = {
+	_,X,_,
+	_,X,_,
+	_,X,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(lparen) = {
+	_,X,
+	X,_,
+	X,_,
+	X,_,
+	X,_,
+	X,_,
+	_,X,
+	_,_,
+0};
+
+C(rparen) = {
+	X,_,
+	_,X,
+	_,X,
+	_,X,
+	_,X,
+	_,X,
+	X,_,
+	_,_,
+0};
+
+C(star) = {
+	_,_,_,_,_,
+	_,_,X,_,_,
+	X,_,X,_,X,
+	_,X,X,X,_,
+	X,_,X,_,X,
+	_,_,X,_,_,
+	_,_,_,_,_,
+	_,_,_,_,_,
+0};
+
+C(plus) = {
+	_,_,_,_,_,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	X,X,X,X,X,
+	_,_,X,_,_,
+	_,_,X,_,_,
+	_,_,_,_,_,
+	_,_,_,_,_,
+0};
+
+C(coma) = {
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,X,_,
+	_,X,_,
+	X,_,_,
+	_,_,_,
+0};
+
+C(minus) = {
+	_,_,_,_,
+	_,_,_,_,
+	_,_,_,_,
+	X,X,X,X,
+	_,_,_,_,
+	_,_,_,_,
+	_,_,_,_,
+	_,_,_,_,
+0};
+
+C(dot) = {
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,X,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(slash) = {
+	_,_,X,
+	_,_,X,
+	_,X,_,
+	_,X,_,
+	X,_,_,
+	X,_,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(lbracket) = {
+	X,X,
+	_,_,
+	X,_,
+	X,_,
+	X,_,
+	X,_,
+	X,X,
+	_,_,
+0};
+
+C(rbracket) = {
+	X,X,
+	_,X,
+	_,X,
+	_,X,
+	_,X,
+	_,X,
+	X,X,
+	_,_,
+0};
+
+C(bkslash) = {
+	X,_,_,
+	X,_,_,
+	_,X,_,
+	_,X,_,
+	_,_,X,
+	_,_,X,
+	_,_,_,
+	_,_,_,
+0};
+
+C(hat) = {
+	_,X,_,
+	X,_,X,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+0};
+
+C(underscore) = {
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	_,_,_,
+	X,X,X,
+	_,_,_,
+	_,_,_,
+0};
+
 struct font font8 = { 8, {
 	glyph_error,	glyph_error,	glyph_error,	glyph_error,
 	glyph_error,	glyph_error,	glyph_error,	glyph_error,
@@ -716,10 +936,10 @@ struct font font8 = { 8, {
 	glyph_error,	glyph_error,	glyph_error,	glyph_error,
 	glyph_error,	glyph_error,	glyph_error,	glyph_error,
 	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_space,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
+	glyph_space,	glyph_exclam,	glyph_dquote,	glyph_hash,
+	glyph_dollar,	glyph_percent,	glyph_amp,	glyph_squote,
+	glyph_lparen,	glyph_rparen,	glyph_star,	glyph_plus,
+	glyph_coma,	glyph_minus,	glyph_dot,	glyph_slash,
 	glyph_0,	glyph_1,	glyph_2,	glyph_3,
 	glyph_4,	glyph_5,	glyph_6,	glyph_7,
 	glyph_8,	glyph_9,	glyph_error,	glyph_error,
@@ -730,8 +950,8 @@ struct font font8 = { 8, {
 	glyph_L,	glyph_M,	glyph_N,	glyph_O,
 	glyph_P,	glyph_Q,	glyph_R,	glyph_S,
 	glyph_T,	glyph_U,	glyph_V,	glyph_W,
-	glyph_X,	glyph_Y,	glyph_Z,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
+	glyph_X,	glyph_Y,	glyph_Z,	glyph_lbracket,
+	glyph_bkslash,	glyph_rbracket,	glyph_hat,	glyph_underscore,
 	glyph_error,	glyph_a,	glyph_b,	glyph_c,
 	glyph_d,	glyph_e,	glyph_f,	glyph_g,
 	glyph_h,	glyph_i,	glyph_j,	glyph_k,

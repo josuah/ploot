@@ -11,9 +11,8 @@ struct font {
 	char		*glyph[128];	/* 0: end, 1: off, 2: on.  */
 };
 
-struct font font13;
-struct font font7;
 struct font font8;
+struct font font13;
 
 /**/
 size_t		font_width		(struct font *, int);

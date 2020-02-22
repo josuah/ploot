@@ -1,9 +1,11 @@
 #include "csv.h"
 
+#include <errno.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "log.h"
 #include "tool.h"
@@ -35,22 +37,29 @@ csv_addrow(struct csv *vl, size_t ncol, char *line)
 {
 	char *field;
 	time_t *tbuf;
+	long l;
+	double d;
 
-	if ((field = strsep(&line, ",")) == NULL)
+	field = strsep(&line, ",");
+	if (!field)
 		fatal(1, "missing epoch at row %zu", vl->n);
 
-	csv_addtime(vl, eatol(field));
-	for (; (field = strsep(&line, ",")) != NULL; ncol--, vl->n++, vl++) {
+	l = strtol(field, NULL, 10);
+	if (errno)
+		fatal(100, "parsing number '%s'", field);
+	csv_addtime(vl, l);
+	tbuf = vl[0].t;
+	for (; (field = strsep(&line, ",")); ncol--, vl->n++, vl++) {
 		if (ncol == 0)
 			fatal(1, "too many fields at line %zu", vl->n);
-		csv_addval(vl, eatof(field));
+		d = strtod(field, NULL);
+		if (errno)
+			fatal(100, "parsing double '%s'", field);
+		csv_addval(vl, d);
+		vl->t = tbuf;
 	}
 	if (ncol > 0)
 		fatal(1, "too few fields at line %zu", vl->n);
-
-	/* the same time buffer can be used for all columns */
-	for (tbuf = vl->t; ncol > 0; ncol--, vl++)
-		vl->t = tbuf;
 }
  
 /*
@@ -64,6 +73,7 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 	size_t sz;
 	ssize_t r;
 
+	sz = 0, line = NULL;
 	r = getline(&line, &sz, fp);
 	if (ferror(fp))
 		fatal(111, "error while reading from file");
@@ -97,7 +107,7 @@ csv_values(FILE *fp, struct csv *vl, size_t ncol)
 	char *line;
 	size_t sz;
 
-	sz = 0;
+	sz = 0, line = NULL;
 	while (getline(&line, &sz, fp) > -1)
 		csv_addrow(vl, ncol, line);
 	if (vl->n == 0)

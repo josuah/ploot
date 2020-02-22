@@ -46,35 +46,12 @@ strsep(char **strp, const char *sep)
 }
 
 void
-estriplf(char *line)
+strchomp(char *s)
 {
-	char *lf;
+	char *x = s + strlen(s);
 
-	if ((lf = strchr(line, '\n')) == NULL || lf[1] != '\0')
-		fputs("invalid input\n", stderr), exit(1);
-	*lf = '\0';
-}
-
-double
-eatof(char *str)
-{
-	char *s;
-
-	for (s = str; *s != '\0'; s++)
-		if (!isdigit(*s) && *s != '-' && *s != '.')
-			fputs("invalid float format\n", stderr), exit(1);
-	return atof(str);
-}
-
-long
-eatol(char *str)
-{
-	char *s;
-
-	for (s = str; *s != '\0'; s++)
-		if (!isdigit(*s) && *s != '-')
-			fputs("invalid number format\n", stderr), exit(1);
-	return atol(str);
+	while (--x >= s && (*x == '\r' || *x == '\n'))
+		*x = '\0';
 }
 
 /*
