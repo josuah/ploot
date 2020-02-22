@@ -144,7 +144,7 @@ farbfeld_title(struct ffplot *plot,
 }
 
 static void
-farbfeld_plot(struct ffplot *plot, struct vlist *vl, struct ffcolor *color,
+farbfeld_plot(struct ffplot *plot, struct csv *vl, struct ffcolor *color,
 	double vmin, double vmax,
 	time_t tmin, time_t tmax)
 {
@@ -167,7 +167,7 @@ farbfeld_plot(struct ffplot *plot, struct vlist *vl, struct ffcolor *color,
 }
 
 static void
-farbfeld_values(struct ffplot *plot, struct vlist *vl, struct ffcolor **cl, size_t ncol,
+farbfeld_values(struct ffplot *plot, struct csv *vl, struct ffcolor **cl, size_t ncol,
 	time_t tmin, time_t tmax,
 	double vmin, double vmax)
 {
@@ -176,7 +176,7 @@ farbfeld_values(struct ffplot *plot, struct vlist *vl, struct ffcolor **cl, size
 }
 
 static void
-farbfeld_legend(struct ffplot *plot, struct ffcolor *fg, struct vlist *vl, struct ffcolor **cl, size_t ncol)
+farbfeld_legend(struct ffplot *plot, struct ffcolor *fg, struct csv *vl, struct ffcolor **cl, size_t ncol)
 {
 	size_t x, y;
 
@@ -200,7 +200,7 @@ farbfeld_legend(struct ffplot *plot, struct ffcolor *fg, struct vlist *vl, struc
  *	        x label here        
  */
 static void
-plot(struct vlist *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
+plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 {
 	struct ffplot plot = { IMAGE_W, IMAGE_H, 0, 0, NULL };
 	struct ffcolor plot_bg = { 0x2222, 0x2222, 0x2222, 0xffff };
@@ -279,7 +279,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	struct vlist *vl;
+	struct csv *vl;
 	struct ffcolor **cl;
 	size_t ncol;
 	int c;

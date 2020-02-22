@@ -9,18 +9,18 @@
 #include "tool.h"
 
 /*
- * Read CSV data onto a set of (struct vlist).
+ * Read CSV data onto a set of (struct csv).
  */
 
 static void
-csv_addtime(struct vlist *vl, time_t epoch)
+csv_addtime(struct csv *vl, time_t epoch)
 {
 	assert(vl->t = realloc(vl->t, (vl->n + 1) * sizeof(*vl->t)));
 	vl->t[vl->n] = epoch;
 }
 
 static void
-csv_addval(struct vlist *vl, double field)
+csv_addval(struct csv *vl, double field)
 {
 	assert(vl->v = realloc(vl->v, (vl->n + 1) * sizeof(*vl->v)));
 	vl->v[vl->n] = field;
@@ -31,7 +31,7 @@ csv_addval(struct vlist *vl, double field)
  * buffer is shared among all fields.
  */
 void
-csv_addrow(struct vlist *vl, size_t ncol, char *line)
+csv_addrow(struct csv *vl, size_t ncol, char *line)
 {
 	char *field;
 	time_t *tbuf;
@@ -58,7 +58,7 @@ csv_addrow(struct vlist *vl, size_t ncol, char *line)
  * epoch,label1,label2,label3
  */
 void
-csv_labels(FILE *fp, struct vlist **vl, size_t *ncol)
+csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 {
 	char *field, *line, *cp, *label;
 	size_t sz;
@@ -92,7 +92,7 @@ csv_labels(FILE *fp, struct vlist **vl, size_t *ncol)
  * epoch,a3,b3,c3  v
  */
 void
-csv_values(FILE *fp, struct vlist *vl, size_t ncol)
+csv_values(FILE *fp, struct csv *vl, size_t ncol)
 {
 	char *line;
 	size_t sz;

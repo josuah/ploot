@@ -20,7 +20,7 @@ char const *arg0 = NULL;
  * a vertical and horizontal axis.
  */
 int
-braille_histogram(struct vlist *vl, struct drawille *drw,
+braille_histogram(struct csv *vl, struct drawille *drw,
 	time_t tmin, time_t tmax, double vmin, double vmax)
 {
 	int		x, xprev, y, yprev, zero;
@@ -102,7 +102,7 @@ braille_render(struct drawille *drw, FILE *fp, double vmin, double vmax)
 }
 
 static void
-plot(struct vlist *vl, FILE *fp, size_t ncol, int row, int col)
+plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 {
 	size_t len;
 	double vmin, vmax, vstep;
@@ -136,7 +136,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	struct vlist *vl;
+	struct csv *vl;
 	size_t ncol;
 	int c;
 
@@ -153,7 +153,9 @@ main(int argc, char **argv)
 	if (argc > 0)
 		usage();
 
+	debug("label");
 	csv_labels(stdin, &vl, &ncol);
+	debug("values");
 	csv_values(stdin, vl, ncol);
 
 	plot(vl, stdout, ncol, 20, 80);

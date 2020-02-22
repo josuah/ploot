@@ -13,6 +13,6 @@
 int		scale_ypos		(double, double, double, int);
 int		scale_xpos		(time_t, time_t, time_t, int);
 void		scale_vminmax		(double *, double *, int);
-void		scale			(struct vlist *, int, time_t *, time_t *, time_t *, double *, double *, double *);
+void		scale			(struct csv *, int, time_t *, time_t *, time_t *, double *, double *, double *);
 
 #endif

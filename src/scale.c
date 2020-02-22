@@ -32,7 +32,7 @@ scale_xpos(time_t t, time_t t1, time_t t2, int szx)
 }
 
 static void
-scale_minmax(struct vlist *vl, int ncol,
+scale_minmax(struct csv *vl, int ncol,
 	time_t *tmin, time_t *tmax,
 	double *vmin, double *vmax)
 {
@@ -131,7 +131,7 @@ scale_vminmax(double *min, double *max, int row)
 }
 
 void
-scale(struct vlist *vl, int ncol,
+scale(struct csv *vl, int ncol,
 	time_t *tmin, time_t *tmax, time_t *tstep,
 	double *vmin, double *vmax, double *vstep)
 {
