@@ -1,3 +1,5 @@
+#include "tool.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -6,12 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "def.h"
-
 size_t
 strlcpy(char *buf, const char *str, size_t sz)
 {
-	size_t		len, cpy;
+	size_t len, cpy;
 
 	cpy = ((len = strlen(str)) > sz) ? (sz) : (len);
 	memcpy(buf, str, cpy);
@@ -30,7 +30,7 @@ put3utf(long rune)
 char *
 strsep(char **strp, const char *sep)
 {
-	char	*s, *prev;
+	char *s, *prev;
 
 	if (*strp == NULL)
 		return NULL;

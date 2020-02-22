@@ -1,13 +1,15 @@
-#include "def.h"
-#include "err.h"
+#include "scale.h"
 
-#define XDENSITY	7		/* nb of values on x axis */
-#define YDENSITY	7		/* nb of values on y axis */
+#include <stddef.h>
+#include <time.h>
+
+#include "tool.h"
+#include "log.h"
 
 /*
  *	- <max   ^
  *	-        |	Translate the coordinates between double values
- *	- <val  szy	and height in the plot of <row> rows.
+ *	- <val  szy and height in the plot of <row> rows.
  *	-        |
  *	- <min   v
  */
@@ -34,9 +36,9 @@ scale_minmax(struct vlist *vl, int ncol,
 	time_t *tmin, time_t *tmax,
 	double *vmin, double *vmax)
 {
-	double		*v;
-	time_t		*t;
-	size_t		n;
+	double *v;
+	time_t *t;
+	size_t n;
 
 	*vmin = *vmax = 0;
 	*tmin = *tmax = *vl->t;
@@ -51,7 +53,7 @@ scale_minmax(struct vlist *vl, int ncol,
 	}
 
 	if (*tmin == *tmax)
-		err(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
+		fatal(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
 }
 
 static time_t
@@ -74,7 +76,7 @@ scale_tstep(time_t min, time_t max, int density)
 static double
 scale_vstep(double min, double max, int density)
 {
-	double		dv, d, *s, scale[] = { 1, 2, 3, 5 };
+	double dv, d, *s, scale[] = { 1, 2, 3, 5 };
 
 	dv = max - min;
 
@@ -98,7 +100,7 @@ scale_vstep(double min, double max, int density)
 void
 scale_vminmax(double *min, double *max, int row)
 {
-	double		unit, range, mi;
+	double unit, range, mi;
 
 	range = *max - *min;
 	unit = 1;
@@ -134,6 +136,6 @@ scale(struct vlist *vl, int ncol,
 	double *vmin, double *vmax, double *vstep)
 {
 	scale_minmax(vl, ncol, tmin, tmax, vmin, vmax);
-	*tstep = scale_tstep(*tmin, *tmax, XDENSITY);
-	*vstep = scale_vstep(*vmin, *vmax, YDENSITY);
+	*tstep = scale_tstep(*tmin, *tmax, SCALE_X);
+	*vstep = scale_vstep(*vmin, *vmax, SCALE_Y);
 }

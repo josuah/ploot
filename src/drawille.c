@@ -1,6 +1,4 @@
-/*
- * Terminal-based plotting using drawille character, aka drawille.
- */
+#include "drawille.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -8,12 +6,16 @@
 #include <string.h>
 #include <math.h>
 
-#include "def.h"
+#include "font.h"
+
+/*
+ * Terminal-based plotting using drawille character, aka drawille.
+ */
 
 /* parameters used to draw a line */
 struct line {
-	int		x0, y0, x1, y1;		/* point of the line */
-	int		dx, dy, sx, sy, err;	/* parameters for the algorythm */
+	int x0, y0, x1, y1;		/* point of the line */
+	int dx, dy, sx, sy, err;	/* parameters for the algorythm */
 };
 
 /*
@@ -37,7 +39,7 @@ drawille_cell_dot(uint8_t *cell, int row, int col)
 static size_t
 drawille_cell_utf(uint8_t cell, char *utf)
 {
-	long		rune;
+	long rune;
 
 	rune = 10240 + cell;
 	utf[0] = (char)(0xe0 | (0x0f & (rune >> 12)));	/* 1110xxxx */
@@ -55,8 +57,8 @@ drawille_get(struct drawille *drw, int row, int col)
 size_t
 drawille_put_row(struct drawille *drw, FILE *fp, int row)
 {
-	char		txt[] = "xxx";
-	size_t		n;
+	char txt[] = "xxx";
+	size_t n;
 
 	n = 0;
 	for (int col = 0; col < drw->col; col++) {
@@ -83,7 +85,7 @@ drawille_dot(struct drawille *drw, int x, int y)
 struct drawille *
 drawille_new(int row, int col)
 {
-	struct drawille	*drw;
+	struct drawille *drw;
 
 	if ((drw = calloc(sizeof(struct drawille) + row * col, 1)) == NULL)
 		return NULL;
@@ -109,7 +111,7 @@ drawille_line_init(struct line *l, int x0, int y0, int x1, int y1)
 static int
 drawille_line_next(struct line *l)
 {
-	int		e;
+	int e;
 
 	if (l->x0 == l->x1 && l->y0 == l->y1)
 		return 0;
@@ -129,7 +131,7 @@ drawille_line_next(struct line *l)
 void
 drawille_line(struct drawille *drw, int x0, int y0, int x1, int y1)
 {
-	struct line	l;
+	struct line l;
 
 	drawille_line_init(&l, x0, y0, x1, y1);
 	do {
@@ -140,7 +142,7 @@ drawille_line(struct drawille *drw, int x0, int y0, int x1, int y1)
 void
 drawille_histogram_dot(struct drawille *drw, int x, int y, int zero)
 {
-	int		sign;
+	int sign;
 
 	sign = (y > zero) ? (+1) : (-1);
 	for (; y != zero + sign; y -= sign)
@@ -150,7 +152,7 @@ drawille_histogram_dot(struct drawille *drw, int x, int y, int zero)
 void
 drawille_histogram_line(struct drawille *drw, int x0, int y0, int x1, int y1, int zero)
 {
-	struct line	l;
+	struct line l;
 
 	drawille_line_init(&l, x0, y0, x1, y1);
 	do {
@@ -158,41 +160,11 @@ drawille_histogram_line(struct drawille *drw, int x0, int y0, int x1, int y1, in
 	} while (drawille_line_next(&l));
 }
 
-/*
- * Plot the body as an histogram interpolating the gaps and include
- * a vertical and horizontal axis.
- */
-int
-drawille_histogram(struct vlist *vl, struct drawille *drw,
-	time_t tmin, time_t tmax, double vmin, double vmax)
-{
-	int		x, xprev, y, yprev, zero;
-	double		*v;
-	time_t		*t;
-	size_t		n;
-
-	zero = scale_ypos(0, vmin, vmax, drw->row*4);
-	v = vl->v;
-	t = vl->t;
-	n = vl->n;
-	for (; n > 0; n--, t++, v++) {
-		if (isnan(*v))  /* XXX: better handling? */
-			continue;
-		y = scale_ypos(*v, vmin, vmax, drw->row * 4);
-		x = scale_xpos(*t, tmin, tmax, drw->col * 2);
-		if (n < vl->n)
-			drawille_histogram_line(drw, xprev, yprev, x, y, zero);
-		xprev = x;
-		yprev = y;
-	}
-	return 0;
-}
-
 static int
 drawille_text_glyph(struct drawille *drw, int x, int y, struct font *font, char c)
 {
-	int		width;
-	char		*glyph;
+	int width;
+	char *glyph;
 
 	if ((unsigned)c > 127)
 		glyph = font->glyph[0];

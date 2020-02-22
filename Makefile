@@ -1,22 +1,27 @@
-CFLAGS	= -Wall -Wextra -std=c99 -pedantic -fPIC
-LFLAGS	= -static
-BIN	= ploot-farbfeld ploot-feed ploot-braille
-LIB	= -lm
-MANDIR	= $(PREFIX)/share/man
+include config.mk
 
-SRC	= csv.c drawille.c font.c font7.c font8.c font13.c util.c scale.c
+src = src/csv.c src/drawille.c src/ffplot.c src/font.c src/font13.c \
+	src/font7.c src/font8.c src/log.c src/scale.c src/tool.c
+inc = src/csv.h src/drawille.h src/ffplot.h src/font.h src/log.h \
+	src/scale.h src/tool.h
+bin = ploot-farbfeld ploot-feed ploot-braille
+obj = ${src:.c=.o}
+lib = -lm
 
-all: $(BIN)
+all: $(bin)
 
-${SRC:.c=.o} ${BIN:=.o}: arg.h def.h Makefile
-${BIN}: ${SRC:.c=.o} ${BIN:=.o}
-	${CC} $(LFLAGS) -o $@ $@.o ${SRC:.c=.o} $(LIB)
+.c.o:
+	${CC} -c ${CFLAGS} -o $@ $<
 
-install: $(BIN)
+${obj} ${bin:=.o}: ${inc} Makefile
+${bin}: ${obj} ${bin:=.o}
+	${CC} $(LFLAGS) -o $@ $@.o ${obj} $(lib)
+
+install: $(bin)
 	mkdir -p ${PREFIX}/bin $(MANDIR)/man1 $(MANDIR)/man7
-	cp $(BIN) ${PREFIX}/bin
+	cp $(bin) ${PREFIX}/bin
 	cp ploot-farbfeld.1 ploot-feed.1 $(MANDIR)/man1
 	cp ploot-csv.7 $(MANDIR)/man7
 
 clean:
-	rm -f *.o
+	rm -f *.o */*.o ${bin}

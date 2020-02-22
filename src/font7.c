@@ -1,10 +1,10 @@
-#include "def.h"
+#include "font.h"
 
 #define C(x)	static char glyph_##x[]
 #define _	2
 #define X	3
 
-C(error) = {
+C(err) = {
 	X,X,X,X,
 	X,_,_,X,
 	X,_,_,X,
@@ -707,37 +707,37 @@ C(space) = {
 	_,_,_,
 0};
 
-struct font font8 = { 8, {
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_space,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
+struct font font7 = { 8, {
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_space,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
 	glyph_0,	glyph_1,	glyph_2,	glyph_3,
 	glyph_4,	glyph_5,	glyph_6,	glyph_7,
-	glyph_8,	glyph_9,	glyph_error,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_A,	glyph_B,	glyph_C,
+	glyph_8,	glyph_9,	glyph_err,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_A,	glyph_B,	glyph_C,
 	glyph_D,	glyph_E,	glyph_F,	glyph_G,
 	glyph_H,	glyph_I,	glyph_J,	glyph_K,
 	glyph_L,	glyph_M,	glyph_N,	glyph_O,
 	glyph_P,	glyph_Q,	glyph_R,	glyph_S,
 	glyph_T,	glyph_U,	glyph_V,	glyph_W,
-	glyph_X,	glyph_Y,	glyph_Z,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error,
-	glyph_error,	glyph_a,	glyph_b,	glyph_c,
+	glyph_X,	glyph_Y,	glyph_Z,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err,
+	glyph_err,	glyph_a,	glyph_b,	glyph_c,
 	glyph_d,	glyph_e,	glyph_f,	glyph_g,
 	glyph_h,	glyph_i,	glyph_j,	glyph_k,
 	glyph_l,	glyph_m,	glyph_n,	glyph_o,
 	glyph_p,	glyph_q,	glyph_r,	glyph_s,
 	glyph_t,	glyph_u,	glyph_v,	glyph_w,
-	glyph_x,	glyph_y,	glyph_z,	glyph_error,
-	glyph_error,	glyph_error,	glyph_error,	glyph_error
+	glyph_x,	glyph_y,	glyph_z,	glyph_err,
+	glyph_err,	glyph_err,	glyph_err,	glyph_err
 } };

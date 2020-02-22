@@ -1,6 +1,6 @@
-#include <string.h>
+#include "font.h"
 
-#include "def.h"
+#include <string.h>
 
 size_t
 font_width(struct font *ft, int c)
@@ -11,7 +11,7 @@ font_width(struct font *ft, int c)
 size_t
 font_strlen(struct font *ft, char *s)
 {
-	size_t		len;
+	size_t len;
 
 	len = 0;
 	for (; *s != '\0'; s++)
