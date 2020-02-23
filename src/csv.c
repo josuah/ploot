@@ -69,7 +69,8 @@ csv_addrow(struct csv *vl, size_t ncol, char *line)
 void
 csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 {
-	char *field, *line, *cp, *label;
+	char *field, *line, *cp;
+	struct csv *col;
 	size_t sz;
 	ssize_t r;
 
@@ -79,6 +80,7 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 		fatal(111, "error while reading from file");
 	if (r == -1)
 		fatal(100, "missing label line");
+	strchomp(line);
 
 	cp = line;
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
@@ -88,8 +90,8 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 	*ncol = 0;
 	while ((field = strsep(&cp, ","))) {
 		assert(*vl = realloc(*vl, sz += sizeof(**vl)));
-		label = (*vl)[(*ncol)++].label;
-		strlcpy(label, field, sizeof(label));
+		col = (*vl) + (*ncol)++;
+		strlcpy(col->label, field, sizeof(col->label));
 	}
 
 	free(line);
