@@ -106,12 +106,10 @@ braille_render(struct drawille *drw, FILE *fp, double vmin, double vmax)
 static void
 plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 {
-	size_t len;
 	double vmin, vmax, vstep;
 	time_t tmin, tmax, tstep;
 	struct drawille *drw;
 
-	len = 500;
 	col -= 8;
 
 	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);

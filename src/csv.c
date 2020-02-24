@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 
 #include "log.h"
 #include "tool.h"

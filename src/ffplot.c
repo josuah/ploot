@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "font.h"
 #include "tool.h"

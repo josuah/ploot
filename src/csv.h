@@ -2,6 +2,7 @@
 #define CSV_H
 
 #include <stdio.h>
+#include <time.h>
 
 /*
  * List of values and timestamps.  Both have their dedicated buffer
