@@ -262,7 +262,7 @@ argv_to_color(struct ffcolor **cl, char **argv)
 {
 	for (; *argv != NULL; cl++, argv++)
 		if ((*cl = name_to_color(*argv)) == NULL)
-			fatal(1, "unknown color name: %s", *argv);
+			die(1, "unknown color name: %s", *argv);
 }
 
 static void
@@ -307,9 +307,9 @@ main(int argc, char **argv)
 
 	csv_labels(stdin, &vl, &ncol);
 	if (ncol > (size_t)argc)
-		fatal(1, "too many columns or not enough arguments");
+		die(1, "too many columns or not enough arguments");
 	else if (ncol < (size_t)argc)
-		fatal(1, "too many arguments or not enough columns");
+		die(1, "too many arguments or not enough columns");
 	csv_values(stdin, vl, ncol);
 	argv_to_color(cl, argv);
 

@@ -123,13 +123,13 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 		assert(drw = drawille_new(row, col));
 		fprintf(fp, " %s\n", vl->label);
 		if (braille_histogram(vl, drw, tmin, tmax, vmin, vmax) == -1)
-			fatal(1, "allocating drawille canvas");
+			die(1, "allocating drawille canvas");
 		if (braille_render(drw, fp, vmin, vmax) == -1)
-			fatal(1, "rendering braille canvas");
+			die(1, "rendering braille canvas");
 		free(drw);
 	}
 	if (braille_axis_x(fp, tmin, tmax, tstep, col) == -1)
-		fatal(1, "printing x axis");;
+		die(1, "printing x axis");;
 
 }
 

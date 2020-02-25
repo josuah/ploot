@@ -5,8 +5,8 @@
 
 /**/
 int log_level;
-void		vlogf			(int, int, char const *, char const *, va_list);
-void		fatal			(int, char const *, ...);
+void		vlogf			(int, char const *, char const *, va_list);
+void		die			(int, char const *, ...);
 void		error			(char const *, ...);
 void		warn			(char const *, ...);
 void		info			(char const *, ...);

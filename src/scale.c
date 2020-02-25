@@ -53,7 +53,7 @@ scale_minmax(struct csv *vl, int ncol,
 	}
 
 	if (*tmin == *tmax)
-		fatal(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
+		die(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
 }
 
 static time_t

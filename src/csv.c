@@ -43,24 +43,24 @@ csv_addrow(struct csv *vl, size_t ncol, char *line)
 
 	field = strsep(&line, ",");
 	if (!field)
-		fatal(1, "missing epoch at row %zu", vl->n);
+		die(1, "missing epoch at row %zu", vl->n);
 
 	l = strtol(field, NULL, 10);
 	if (errno)
-		fatal(100, "parsing number '%s'", field);
+		die(100, "parsing number '%s'", field);
 	csv_addtime(vl, l);
 	tbuf = vl[0].t;
 	for (; (field = strsep(&line, ",")); ncol--, vl->n++, vl++) {
 		if (ncol == 0)
-			fatal(1, "too many fields at line %zu", vl->n);
+			die(1, "too many fields at line %zu", vl->n);
 		d = strtod(field, NULL);
 		if (errno)
-			fatal(100, "parsing double '%s'", field);
+			die(100, "parsing double '%s'", field);
 		csv_addval(vl, d);
 		vl->t = tbuf;
 	}
 	if (ncol > 0)
-		fatal(1, "too few fields at line %zu", vl->n);
+		die(1, "too few fields at line %zu", vl->n);
 }
  
 /*
@@ -78,14 +78,14 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 	sz = 0, line = NULL;
 	r = getline(&line, &sz, fp);
 	if (ferror(fp))
-		fatal(111, "error while reading from file");
+		die(111, "error while reading from file");
 	if (r == -1)
-		fatal(100, "missing label line");
+		die(100, "missing label line");
 	strchomp(line);
 
 	cp = line;
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
-		fatal(1, "first label must be 'epoch'");
+		die(1, "first label must be 'epoch'");
 
 	*vl = NULL;
 	*ncol = 0;
@@ -114,9 +114,9 @@ csv_values(FILE *fp, struct csv *vl, size_t ncol)
 	while (getline(&line, &sz, fp) > -1)
 		csv_addrow(vl, ncol, line);
 	if (vl->n == 0)
-		fatal(1, "no value could be read");
+		die(1, "no value could be read");
 	if (vl->n == 1)
-		fatal(1, "only one value could be read");
+		die(1, "only one value could be read");
 
 	free(line);
 }

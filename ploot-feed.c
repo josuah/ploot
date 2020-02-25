@@ -60,19 +60,19 @@ plot_row(long *out, char *line, double *max, int nrow, int ncol)
 
 	tok = strsep(&line, ",");
 	if (!tok)
-		fatal(100, "*** missing epoch value");
+		die(100, "*** missing epoch value");
 	epoch = strtol(tok, NULL, 10);
 	if (errno)
 		error("*** parsing epoch '%s'", tok);
 
 	for (n = 0; (tok = strsep(&line, ",")) != NULL; n++) {
 		if (n >= ncol)
-			fatal(100, "too many values");
+			die(100, "too many values");
 		val = atof(tok);
 		plot_val(out + n * width, val, max[n], nrow);
 	}
 	if (n < ncol)
-		fatal(100, "not enough values");
+		die(100, "not enough values");
 
 	return epoch;
 }
@@ -100,7 +100,7 @@ plot_line(long *out, double *max, int ncol)
 	for (nrow = 0; nrow < 4; nrow++) {
 		if (getline(&line, &sz, stdin) == -1) {
 			if (ferror(stdin))
-				fatal(111, "reading row from stdin");
+				die(111, "reading row from stdin");
 			exit(0);
 		}
 		epoch = plot_row(out, line, max, nrow, ncol);
@@ -179,21 +179,21 @@ read_labels(char **labv)
 	line = NULL, sz = 0;
 	if (getline(&line, &sz, stdin) == -1) {
 		if (ferror(stdin))
-			fatal(111, "reading labels from stdin");
-		fatal(100, "missing label line", stderr);
+			die(111, "reading labels from stdin");
+		die(100, "missing label line", stderr);
 	}
 	strchomp(line);
 	cp = line;
 
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
-		fatal(100, "first label must be 'epoch'");
+		die(100, "first label must be 'epoch'");
 
 	for (ncol = 0; (tok = strsep(&cp, ",")) != NULL; ncol++, labv++)
 		*labv = tok;
 	*labv = NULL;
 
 	if (ncol < 1)
-		fatal(100, "no label found");
+		die(100, "no label found");
 	return ncol;
 }
 
@@ -250,7 +250,7 @@ main(int argc, char **argv)
 	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");
 	fmt_labels(labels, ncol, labv);
 	if (ncol != nmax)
-		fatal(100, "not as many labels and arguments");
+		die(100, "not as many labels and arguments");
 	plot(labels, max, ncol);
 
 	return 0;

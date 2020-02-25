@@ -16,12 +16,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define LOG_DEFAULT 3
+#define LOG_DEFAULT 2  /* info */
 
 int log_level = -1;
 
 void
-vlogf(int exitcode, int level, char const *flag, char const *fmt, va_list va)
+vlogf(int level, char const *flag, char const *fmt, va_list va)
 {
 	char *env;
 
@@ -32,7 +32,7 @@ vlogf(int exitcode, int level, char const *flag, char const *fmt, va_list va)
 	}
 
 	if (log_level < level)
-		goto end;
+		return;
 
 	fprintf(stderr, "%s: ", flag);
 	vfprintf(stderr, fmt, va);
@@ -43,19 +43,17 @@ vlogf(int exitcode, int level, char const *flag, char const *fmt, va_list va)
 
 	fprintf(stderr, "\n");
 	fflush(stderr);
-end:
-	if (exitcode)
-		exit(exitcode);
 }
 
 void
-fatal(int exitcode, char const *fmt, ...)
+die(int exitcode, char const *fmt, ...)
 {
 	va_list va;
 
 	va_start(va, fmt);
-	vlogf(exitcode, 0, "fatal", fmt, va);
+	vlogf(0, "error", fmt, va);
 	va_end(va);
+	exit(exitcode);
 }
 
 void
@@ -64,7 +62,7 @@ error(char const *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vlogf(0, 1, "error", fmt, va);
+	vlogf(0, "error", fmt, va);
 	va_end(va);
 }
 
@@ -74,7 +72,7 @@ warn(char const *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vlogf(0, 2, "warn", fmt, va);
+	vlogf(1, "warn", fmt, va);
 	va_end(va);
 }
 
@@ -84,7 +82,7 @@ info(char const *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vlogf(0, 3, "info", fmt, va);
+	vlogf(2, "info", fmt, va);
 	va_end(va);
 }
 
@@ -94,6 +92,6 @@ debug(char const *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vlogf(0, 4, "debug", fmt, va);
+	vlogf(3, "debug", fmt, va);
 	va_end(va);
 }
