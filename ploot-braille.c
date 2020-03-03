@@ -110,7 +110,7 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int rows, int cols)
 	time_t tmin, tmax, tstep;
 	struct drawille *drw;
 
-	cols -= 8;		/* scale printed at the right */
+	cols -= 9;		/* scale printed at the right */
 
 	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
 	tstep = scale_tstep(tmin, tmax, cols / 10);
@@ -133,7 +133,6 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int rows, int cols)
 	}
 	if (braille_axis_x(fp, tmin, tmax, tstep, cols) == -1)
 		die(1, "printing x axis");;
-
 }
 
 static void
