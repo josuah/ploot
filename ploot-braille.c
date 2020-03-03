@@ -10,7 +10,7 @@
 
 #include "drawille.h"
 #include "scale.h"
-#include "tool.h"
+#include "util.h"
 #include "log.h"
 
 char const *arg0 = NULL;
@@ -104,23 +104,26 @@ braille_render(struct drawille *drw, FILE *fp, double vmin, double vmax)
 }
 
 static void
-plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
+plot(struct csv *vl, FILE *fp, size_t ncol, int rows, int cols)
 {
 	double vmin, vmax, vstep;
 	time_t tmin, tmax, tstep;
 	struct drawille *drw;
 
-	col -= 8;
+	cols -= 8;		/* scale printed at the right */
 
-	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
-	row -= ncol - 1;	/* room for the labels and the scale */
-	row /= ncol;		/* plot <ncol> times */
-	row = MAX(row, 3);	/* readable */
+	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
+	tstep = scale_tstep(tmin, tmax, cols / 10);
+	vstep = scale_vstep(vmin, vmax, rows / 10);
 
-	debug("vstep=%lf vstep=%ld ncol=%zu row=%zu", vstep, tstep, ncol, row);
+	rows -= ncol - 1;	/* room for the labels and the scale */
+	rows /= ncol;		/* plot <ncol> times */
+	rows = MAX(rows, 3);	/* readable */
+
+	debug("vstep=%lf vstep=%ld ncol=%zu rows=%zu", vstep, tstep, ncol, rows);
 
 	for (; ncol > 0; vl++, ncol--) {
-		assert(drw = drawille_new(row, col));
+		assert(drw = drawille_new(rows, cols));
 		fprintf(fp, " %s\n", vl->label);
 		if (braille_histogram(vl, drw, tmin, tmax, vmin, vmax) == -1)
 			die(1, "allocating drawille canvas");
@@ -128,7 +131,7 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 			die(1, "rendering braille canvas");
 		free(drw);
 	}
-	if (braille_axis_x(fp, tmin, tmax, tstep, col) == -1)
+	if (braille_axis_x(fp, tmin, tmax, tstep, cols) == -1)
 		die(1, "printing x axis");;
 
 }
@@ -136,7 +139,7 @@ plot(struct csv *vl, FILE *fp, size_t ncol, int row, int col)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s\n", arg0);
+	fprintf(stderr, "usage: %s [-r rows] [-c cols]\n", arg0);
 	exit(1);
 }
 
@@ -148,6 +151,7 @@ main(int argc, char **argv)
 	int c, rows, cols;
 
 	rows = 20, cols = 80;
+	arg0 = *argv;
 	optind = 0;
 	while ((c = getopt(argc, argv, "r:c:")) > -1) {
 		switch (c) {

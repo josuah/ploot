@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "tool.h"
+#include "util.h"
 #include "log.h"
 
 /*
@@ -31,7 +31,7 @@ scale_xpos(time_t t, time_t t1, time_t t2, int szx)
 	return szx * (t - t1) / (t2 - t1);
 }
 
-static void
+void
 scale_minmax(struct csv *vl, int ncol,
 	time_t *tmin, time_t *tmax,
 	double *vmin, double *vmax)
@@ -56,10 +56,10 @@ scale_minmax(struct csv *vl, int ncol,
 		die(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
 }
 
-static time_t
-scale_tstep(time_t min, time_t max, int density)
+time_t
+scale_tstep(time_t min, time_t max, int nval)
 {
-        time_t dt, *s, scale[] = {
+        time_t dt, *sc, scale[] = {
 		1, 5, 2, 10, 20, 30, 60, 60*2, 60*5, 60*10, 60*20, 60*30, 3600, 
 		3600*2, 3600*5, 3600*10, 3600*18, 3600*24, 3600*24*2, 
 		3600*24*5, 3600*24*10, 3600*24*20, 3600*24*30, 3600*24*50,
@@ -67,75 +67,29 @@ scale_tstep(time_t min, time_t max, int density)
 	};
 
 	dt = max - min;
-	for (s = scale; s < scale + LEN(scale); s++)
-		if (dt < *s * density)
-			return *s;
-	return 0;
+
+	for (sc = scale; *sc > 0; sc++)
+		if (dt < *sc * nval)
+			return *sc;
+	return dt / nval;
 }
 
-static double
-scale_vstep(double min, double max, int density)
+double
+scale_vstep(double min, double max, int nval)
 {
-	double dv, d, *s, scale[] = { 1, 2, 3, 5 };
+	double dv, d, *sc, scale[] = { 1, 2, 3, 5 };
 
 	dv = max - min;
 
 	if (dv > 1)
 		for (d = 1; d != 0; d *= 10)
-			for (s = scale; s < scale + LEN(scale); s++)
-				if (dv < *s * d * density)
-					return *s * d;
+			for (sc = scale; sc < scale + LEN(scale); sc++)
+				if (dv < *sc * d * nval)
+					return *sc * d;
 	if (dv < 1)
 		for (d = 1; d != 0; d *= 10)
-			for (s = scale + LEN(scale) - 1; s >= scale; s--)
-				if (dv > *s / d * density / 2)
-					return *s / d;
+			for (sc = scale + LEN(scale) - 1; sc >= scale; sc--)
+				if (dv > *sc / d * nval / 2)
+					return *sc / d;
 	return 0;
-}
-
-/*
- * Adjust the vertical scale so that everything fits, with nice
- * scale values.
- */
-void
-scale_vminmax(double *min, double *max, int row)
-{
-	double unit, range, mi;
-
-	range = *max - *min;
-	unit = 1;
-
-	/* Zoom until it fills the canvas. */
-	for (; (row - 1) * unit > range; unit /= 10)
-		continue;
-
-	/* Dezoom until it fits the canvas. */
-	for (; (row - 1) * unit < range; unit *= 10)
-		continue;
-
-	/* Fine tune. */
-	if ((row - 1) * unit / 5 > range)
-		unit /= 5;
-	if ((row - 1) * unit / 4 > range)
-		unit /= 4;
-	if ((row - 1) * unit / 2 > range)
-		unit /= 2;
-
-	/* Align the minimum (and the zero). */
-	for (mi = 0; mi > *min - unit; mi -= unit)
-		continue;
-
-	/* Update the displayed minimal and maximal. */
-	*min = mi;
-	*max = mi + unit * row;
-}
-
-void
-scale(struct csv *vl, int ncol,
-	time_t *tmin, time_t *tmax, time_t *tstep,
-	double *vmin, double *vmax, double *vstep)
-{
-	scale_minmax(vl, ncol, tmin, tmax, vmin, vmax);
-	*tstep = scale_tstep(*tmin, *tmax, SCALE_X);
-	*vstep = scale_vstep(*vmin, *vmax, SCALE_Y);
 }

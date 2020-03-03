@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "font.h"
-#include "tool.h"
+#include "util.h"
 
 /*
  * Convert (x,y) coordinates to (row,col) for printing into the buffer.

@@ -5,7 +5,7 @@
 
 #include "drawille.h"
 #include "font.h"
-#include "tool.h"
+#include "util.h"
 
 char *arg0 = NULL;
 

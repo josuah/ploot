@@ -9,7 +9,7 @@
 #include <time.h>
 
 #include "log.h"
-#include "tool.h"
+#include "util.h"
 
 /*
  * Read CSV data onto a set of (struct csv).

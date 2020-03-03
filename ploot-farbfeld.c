@@ -15,7 +15,7 @@
 #include "ffplot.h"
 #include "font.h"
 #include "log.h"
-#include "tool.h"
+#include "util.h"
 #include "scale.h"
 
 #define MARGIN		4
@@ -211,7 +211,9 @@ plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 	double vmin, vmax, vstep;
 	time_t tmin, tmax, tstep;
 
-	scale(vl, ncol, &tmin, &tmax, &tstep, &vmin, &vmax, &vstep);
+	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
+	tstep = scale_tstep(tmin, tmax, 7);
+	vstep = scale_vstep(vmin, vmax, 7);
 
 	assert(plot.buf = calloc(IMAGE_H * IMAGE_W, sizeof *plot.buf));
 

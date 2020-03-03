@@ -1,4 +1,4 @@
-#include "tool.h"
+#include "util.h"
 
 #include <ctype.h>
 #include <errno.h>

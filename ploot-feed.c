@@ -9,7 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "tool.h"
+#include "util.h"
 #include "log.h"
 
 #define WIDTH_MAX 1024
