@@ -287,7 +287,7 @@ main(int argc, char **argv)
 	int c;
 
 	optind = 0;
-	while ((c = getopt(argc, argv, "")) > -1) {
+	while ((c = getopt(argc, argv, "t:u:")) > -1) {
 		switch (c) {
 		case 't':
 			tflag = optarg;
