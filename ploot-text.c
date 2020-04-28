@@ -12,7 +12,7 @@ char *arg0 = NULL;
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-123] text\n", arg0);
+	fprintf(stderr, "usage: %s [-12] text\n", arg0);
 	exit(100);
 }
 
