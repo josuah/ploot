@@ -21,7 +21,7 @@ install: ${bin}
 	mkdir -p ${PREFIX}/bin ${MANDIR}/man1 ${MANDIR}/man5
 	cp ${bin} ${PREFIX}/bin
 	cp *.1 ${MANDIR}/man1
-	cp *.5 ${MANDIR}/man7
+	cp *.5 ${MANDIR}/man5
 
 clean:
 	rm -f *.o */*.o ${bin}
