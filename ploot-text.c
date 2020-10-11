@@ -25,7 +25,6 @@ main(int argc, char **argv)
 	int c, row;
 
 	ft = &font8;
-	optind = 0;
 	while ((c = getopt(argc, argv, "12")) > -1) {
 		switch (c) {
 		case '1':
