@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 /**/
-int log_level;
+extern int log_level;
 void		vlogf			(int, char const *, char const *, va_list);
 void		die			(int, char const *, ...);
 void		error			(char const *, ...);
