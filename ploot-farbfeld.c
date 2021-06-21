@@ -16,6 +16,10 @@
 #include "util.h"
 #include "scale.h"
 
+#ifndef __OpenBSD__
+#define pledge(...) 0
+#endif
+
 #define MARGIN		4
 
 #define IMAGE_H		(TITLE_H + PLOT_H + XLABEL_H)
@@ -283,6 +287,9 @@ main(int argc, char **argv)
 	struct ffcolor **cl;
 	size_t ncol;
 	int c;
+
+	if (pledge("stdio", "") < 0)
+		err(1, "pledge: %s", strerror(errno));
 
 	arg0 = *argv;
 	while ((c = getopt(argc, argv, "t:u:")) > -1) {

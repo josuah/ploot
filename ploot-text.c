@@ -5,6 +5,10 @@
 #include <string.h>
 #include <errno.h>
 
+#ifndef __OpenBSD__
+#define pledge(...) 0
+#endif
+
 #include "drawille.h"
 #include "font.h"
 #include "util.h"
@@ -24,6 +28,9 @@ main(int argc, char **argv)
 	char *text;
 	size_t h, w;
 	int c, row;
+
+	if (pledge("stdio", "") < 0)
+		err(1, "pledge: %s", strerror(errno));
 
 	ft = &font8;
 	arg0 = *argv;

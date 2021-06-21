@@ -10,6 +10,10 @@
 #include <unistd.h>
 #include "util.h"
 
+#ifndef __OpenBSD__
+#define pledge(...) 0
+#endif
+
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
@@ -219,6 +223,9 @@ main(int argc, char **argv)
 	int ncol, nmax;
 	char *labv[4069 / 2], labels[4069];
 	int c;
+
+	if (pledge("stdio", "") < 0)
+		err(1, "pledge: %s", strerror(errno));
 
 	arg0 = *argv;
 	while ((c = getopt(argc, argv, "w:")) > -1) {

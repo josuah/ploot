@@ -11,6 +11,10 @@
 #include "scale.h"
 #include "util.h"
 
+#ifndef __OpenBSD__
+#define pledge(...) 0
+#endif
+
 /*
  * Plot the body as an histogram interpolating the gaps and include
  * a vertical and horizontal axis.
@@ -145,6 +149,9 @@ main(int argc, char **argv)
 	struct csv *vl;
 	size_t ncol;
 	int c, rows, cols;
+
+	if (pledge("stdio", "") < 0)
+		err(1, "pledge: %s", strerror(errno));
 
 	rows = 20, cols = 80;
 	arg0 = *argv;
