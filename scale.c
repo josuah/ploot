@@ -4,7 +4,6 @@
 #include <time.h>
 
 #include "util.h"
-#include "log.h"
 
 /*
  *	- <max   ^
@@ -53,11 +52,11 @@ scale_minmax(struct csv *vl, int ncol,
 	}
 
 	if (*tmin == *tmax)
-		die(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
+		err(1, "invalid time scale: min=%lld max=%lld", *tmin, *tmax);
 }
 
 time_t
-scale_tstep(time_t min, time_t max, int nval)
+scale_csvep(time_t min, time_t max, int nval)
 {
         time_t dt, *sc, scale[] = {
 		1, 5, 2, 10, 20, 30, 60, 60*2, 60*5, 60*10, 60*20, 60*30, 3600, 

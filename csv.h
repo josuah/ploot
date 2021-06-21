@@ -15,9 +15,8 @@ struct csv {
 	char		label[64];	/* for the legend */
 };
 
-/**/
-void		csv_addrow		(struct csv *, size_t, char *);
-void		csv_labels		(FILE *, struct csv **, size_t *);
-void		csv_values		(FILE *, struct csv *, size_t);
+void	csv_addrow(struct csv *, size_t, char *);
+void	csv_labels(FILE *, struct csv **, size_t *);
+void	csv_values(FILE *, struct csv *, size_t);
 
 #endif

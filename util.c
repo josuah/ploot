@@ -1,5 +1,4 @@
 #include "util.h"
-
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -7,6 +6,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+char const *arg0;
+
+static void
+_log(char const *fmt, va_list va)
+{
+	if (arg0 != NULL)
+		fprintf(stderr, "%s: ", arg0);
+	vfprintf(stderr, fmt, va);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+}
+
+void
+err(int e, char const *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	_log( fmt, va);
+	exit(e);
+}
+
+void
+warn(char const *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	_log(fmt, va);
+}
+
+void
+debug(char const *fmt, ...)
+{
+	static int verbose = -1;
+	va_list va;
+
+	if (verbose < 0)
+		verbose = (getenv("DEBUG") != NULL);
+	if (!verbose)
+		return;
+	va_start(va, fmt);
+	_log(fmt, va);
+}
 
 size_t
 strlcpy(char *buf, const char *str, size_t sz)

@@ -5,13 +5,13 @@
 .
 .Sh NAME
 .
-.Nm ploot-farbfeld
-.Nd produce a farbfeld image of csv input
+.Nm ploot-ffplot
+.Nd produce a ffplot image of csv input
 .
 .
 .Sh SYNOPSIS
 .
-.Nm ploot-farbfeld
+.Nm ploot-ffplot
 .Op Fl t Ar title
 .Op Fl u Ar unit
 .Ar colors...
@@ -21,7 +21,7 @@
 .
 The
 .Nm
-utility plots an image in the farbfeld format out of csv values coming from stdin.
+utility plots an image in the ffplot format out of csv values coming from stdin.
 .
 .Bl -tag -width 6n
 .
@@ -59,20 +59,20 @@ epoch,used_memory,free_memory
 1533752055,301,260
 1533752056,303,258
 EOF
-$ ploot-farbfeld -t demo -u MB red yellow <sample.txt
+$ ploot-ffplot -t demo -u MB red yellow <sample.txt
 .Ed
 .
 .
 .Sh SEE ALSO
 .
-.Xr ploot-farbfeld 1 ,
+.Xr ploot-ffplot 1 ,
 .Xr ploot-csv 7
 .
 .Pp
 The
-.Xr farbfeld 7
+.Xr ffplot 7
 image format:
-.Lk https://tools.suckless.org/farbfeld/
+.Lk https://tools.suckless.org/ffplot/
 .
 .
 .Sh HISTORY

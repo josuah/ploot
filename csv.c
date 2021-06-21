@@ -1,5 +1,4 @@
 #include "csv.h"
-
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
@@ -7,8 +6,6 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
-
-#include "log.h"
 #include "util.h"
 
 /*
@@ -18,14 +15,24 @@
 static void
 csv_addtime(struct csv *vl, time_t epoch)
 {
-	assert(vl->t = realloc(vl->t, (vl->n + 1) * sizeof(*vl->t)));
+	void *mem;
+
+	debug("csv_addtime %p", vl->t);
+	if ((mem = realloc(vl->t, (vl->n + 1) * sizeof *vl->t)) == NULL)
+		err(1, "realloc: %s", strerror(errno));
+	vl->t = mem;
 	vl->t[vl->n] = epoch;
 }
 
 static void
 csv_addval(struct csv *vl, double field)
 {
-	assert(vl->v = realloc(vl->v, (vl->n + 1) * sizeof(*vl->v)));
+	void *mem;
+
+	debug("csv_addval %p", vl->t);
+	if ((mem = realloc(vl->v, (vl->n + 1) * sizeof *vl->v)) == NULL)
+		err(1, "", strerror(errno));
+	vl->v = mem;
 	vl->v[vl->n] = field;
 }
 
@@ -41,31 +48,31 @@ csv_addrow(struct csv *vl, size_t ncol, char *line)
 	long l;
 	double d;
 
-	field = strsep(&line, ",");
-	if (!field)
-		die(1, "missing epoch at row %zu", vl->n);
+	if ((field = strsep(&line, ",")) == NULL)
+		err(1, "missing epoch at row %zu", vl->n);
 
 	l = strtol(field, NULL, 10);
 	if (errno)
-		die(100, "parsing number '%s'", field);
+		err(100, "parsing number '%s'", field);
+
 	csv_addtime(vl, l);
 	tbuf = vl[0].t;
 	for (; (field = strsep(&line, ",")); ncol--, vl->n++, vl++) {
 		if (ncol == 0)
-			die(1, "too many fields at line %zu", vl->n);
+			err(1, "too many fields at line %zu", vl->n);
 		d = strtod(field, NULL);
 		if (errno)
-			die(100, "parsing double '%s'", field);
+			err(100, "parsing double '%s'", field);
 		csv_addval(vl, d);
 		vl->t = tbuf;
 	}
 	if (ncol > 0)
-		die(1, "too few fields at line %zu", vl->n);
+		err(1, "too few fields at line %zu", vl->n);
 }
- 
+
 /*
- *       < *ncol >
- * epoch,label1,label2,label3
+ *      < (ncol) >
+ * label1,label2,label3
  */
 void
 csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
@@ -78,19 +85,20 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 	sz = 0, line = NULL;
 	r = getline(&line, &sz, fp);
 	if (ferror(fp))
-		die(111, "error while reading from file");
-	if (r == -1)
-		die(100, "missing label line");
+		err(111, "error while reading from file");
+	if (feof(fp))
+		err(100, "missing label line");
 	strchomp(line);
 
 	cp = line;
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
-		die(1, "first label must be 'epoch'");
+		err(1, "first label must be 'epoch'");
 
 	*vl = NULL;
 	*ncol = 0;
 	while ((field = strsep(&cp, ","))) {
-		assert(*vl = realloc(*vl, sz += sizeof(**vl)));
+		if ((*vl = realloc(*vl, sz += sizeof **vl)) == NULL)
+			err(1, "realloc: %s", strerror(errno));
 		col = (*vl) + (*ncol)++;
 		strlcpy(col->label, field, sizeof(col->label));
 	}
@@ -99,10 +107,12 @@ csv_labels(FILE *fp, struct csv **vl, size_t *ncol)
 }
 
 /*
- *       < ncol >
- * epoch,a1,b1,c1  ^
- * epoch,a2,b2,c2 vl->n
- * epoch,a3,b3,c3  v
+ *    < (ncol) >
+ * val1a,val1b,val1c    ^
+ * val2a,val2b,val2c    |
+ * val3a,val3b,val3c (vl->n)
+ * val4a,val4b,val4c    |
+ * val5a,val5b,val5c    v
  */
 void
 csv_values(FILE *fp, struct csv *vl, size_t ncol)
@@ -114,9 +124,9 @@ csv_values(FILE *fp, struct csv *vl, size_t ncol)
 	while (getline(&line, &sz, fp) > -1)
 		csv_addrow(vl, ncol, line);
 	if (vl->n == 0)
-		die(1, "no value could be read");
+		err(1, "no value could be read");
 	if (vl->n == 1)
-		die(1, "only one value could be read");
+		err(1, "only one value could be read");
 
 	free(line);
 }

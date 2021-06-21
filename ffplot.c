@@ -141,7 +141,7 @@ ffplot_print(FILE *fp, struct ffplot *plot)
 	w = htonl(plot->w);
 	h = htonl(plot->h);
 
-	fprintf(stdout, "farbfeld");
+	fprintf(stdout, "ffplot");
 	fwrite(&w, sizeof(w), 1, fp);
 	fwrite(&h, sizeof(h), 1, fp);
 	fwrite(plot->buf, plot->w * plot->h, sizeof(*plot->buf), fp);

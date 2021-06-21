@@ -7,13 +7,9 @@
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
-
 #include "drawille.h"
 #include "scale.h"
 #include "util.h"
-#include "log.h"
-
-char const *arg0 = NULL;
 
 /*
  * Plot the body as an histogram interpolating the gaps and include
@@ -46,7 +42,7 @@ braille_histogram(struct csv *vl, struct drawille *drw,
 }
 
 static int
-braille_axis_x(FILE *fp, time_t tmin, time_t tmax, time_t tstep, int col)
+braille_axis_x(FILE *fp, time_t tmin, time_t tmax, time_t csvep, int col)
 {
 	int x, o, prec;
 	char tmp[sizeof("MM/DD HH:MM")], *fmt;
@@ -54,13 +50,13 @@ braille_axis_x(FILE *fp, time_t tmin, time_t tmax, time_t tstep, int col)
 	time_t t;
 
 	fmt =
-	  (tstep < 3600 * 12) ? "^%H:%M:%S" :
-	  (tstep < 3600 * 24) ? "^%m/%d %H:%M" :
+	  (csvep < 3600 * 12) ? "^%H:%M:%S" :
+	  (csvep < 3600 * 24) ? "^%m/%d %H:%M" :
 	  "^%Y/%m/%d";
 	n = x = 0;
 
-	t = tmin + tstep - tmin % tstep;
-	for (; t < tmax; t += tstep) {
+	t = tmin + csvep - tmin % csvep;
+	for (; t < tmax; t += csvep) {
 		x = (t - tmin) * col / (tmax - tmin);
 		strftime(tmp, sizeof tmp, fmt, localtime(&t));
 		prec = x - n + strlen(tmp);
@@ -107,32 +103,33 @@ static void
 plot(struct csv *vl, FILE *fp, size_t ncol, int rows, int cols)
 {
 	double vmin, vmax, vstep;
-	time_t tmin, tmax, tstep;
+	time_t tmin, tmax, csvep;
 	struct drawille *drw;
 
 	cols -= 9;		/* scale printed at the right */
 
 	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
-	tstep = scale_tstep(tmin, tmax, cols / 10);
+	csvep = scale_csvep(tmin, tmax, cols / 10);
 	vstep = scale_vstep(vmin, vmax, rows / 10);
 
 	rows -= ncol - 1;	/* room for the labels and the scale */
 	rows /= ncol;		/* plot <ncol> times */
 	rows = MAX(rows, 3);	/* readable */
 
-	debug("vstep=%lf vstep=%ld ncol=%zu rows=%zu", vstep, tstep, ncol, rows);
+	debug("vstep=%lf vstep=%ld ncol=%zu rows=%zu", vstep, csvep, ncol, rows);
 
 	for (; ncol > 0; vl++, ncol--) {
-		assert(drw = drawille_new(rows, cols));
+		if ((drw = drawille_new(rows, cols)) == NULL)
+			err(1, "drawille_new: %s", strerror(errno));
 		fprintf(fp, " %s\n", vl->label);
 		if (braille_histogram(vl, drw, tmin, tmax, vmin, vmax) == -1)
-			die(1, "allocating drawille canvas");
+			err(1, "allocating drawille canvas");
 		if (braille_render(drw, fp, vmin, vmax) == -1)
-			die(1, "rendering braille canvas");
+			err(1, "rendering braille canvas");
 		free(drw);
 	}
-	if (braille_axis_x(fp, tmin, tmax, tstep, cols) == -1)
-		die(1, "printing x axis");;
+	if (braille_axis_x(fp, tmin, tmax, csvep, cols) == -1)
+		err(1, "printing x axis");;
 }
 
 static void
@@ -151,20 +148,19 @@ main(int argc, char **argv)
 
 	rows = 20, cols = 80;
 	arg0 = *argv;
-	optind = 0;
 	while ((c = getopt(argc, argv, "r:c:")) > -1) {
 		switch (c) {
 		case 'r':
 			rows = atoi(optarg);
 			if (rows < 1) {
-				error("invalid number of rows");
+				warn("invalid number of rows");
 				usage();
 			}
 			break;
 		case 'c':
 			cols = atoi(optarg);
 			if (rows < 1) {
-				error("invalid number of columns");
+				warn("invalid number of columns");
 				usage();
 			}
 			break;

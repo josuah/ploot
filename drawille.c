@@ -8,8 +8,6 @@
 
 #include "font.h"
 
-#include "log.h" /* XXX */
-
 /*
  * Terminal-based plotting using drawille character, aka drawille.
  */

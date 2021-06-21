@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "drawille.h"
 #include "font.h"
 #include "util.h"
-
-char *arg0 = NULL;
 
 void
 usage(void)
@@ -22,9 +22,11 @@ main(int argc, char **argv)
 	struct font *ft;
 	struct drawille *drw;
 	char *text;
+	size_t h, w;
 	int c, row;
 
 	ft = &font8;
+	arg0 = *argv;
 	while ((c = getopt(argc, argv, "12")) > -1) {
 		switch (c) {
 		case '1':
@@ -37,7 +39,6 @@ main(int argc, char **argv)
 			usage();
 		}
 	}
-	arg0 = *argv;
 	argc -= optind;
 	argv += optind;
 
@@ -46,13 +47,17 @@ main(int argc, char **argv)
 
 	text = *argv;
 
-	assert(drw = drawille_new((ft->height + 3) / 4, font_strlen(ft, text) / 2));
+	h = (ft->height + 3) / 4;
+	w = font_strlen(ft, text) / 2;
+	if ((drw = drawille_new(h, w)) == NULL)
+		err(1, "drawille_new: %s", strerror(errno));
 	drawille_text(drw, 0, 0, ft, text);
 
-        for (row = 0; row < drw->row; row++) {
+	for (row = 0; row < drw->row; row++) {
 		drawille_put_row(stdout, drw, row);
-                fprintf(stdout, "\n");
-        }
+		fprintf(stdout, "\n");
+	}
 
 	free(drw);
+	return 0;
 }

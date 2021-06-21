@@ -8,14 +8,11 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
 #include "util.h"
-#include "log.h"
 
 #define WIDTH_MAX 1024
 #define BRAILLE_START	10240
 
-char const *arg0 = NULL;
 static int wflag = 80;
 static int width = 0;
 
@@ -60,19 +57,19 @@ plot_row(long *out, char *line, double *max, int nrow, int ncol)
 
 	tok = strsep(&line, ",");
 	if (!tok)
-		die(100, "*** missing epoch value");
+		err(100, "*** missing epoch value");
 	epoch = strtol(tok, NULL, 10);
 	if (errno)
-		error("*** parsing epoch '%s'", tok);
+		warn("*** parsing epoch '%s'", tok);
 
 	for (n = 0; (tok = strsep(&line, ",")) != NULL; n++) {
 		if (n >= ncol)
-			die(100, "too many values");
+			err(100, "too many values");
 		val = atof(tok);
 		plot_val(out + n * width, val, max[n], nrow);
 	}
 	if (n < ncol)
-		die(100, "not enough values");
+		err(100, "not enough values");
 
 	return epoch;
 }
@@ -100,7 +97,7 @@ plot_line(long *out, double *max, int ncol)
 	for (nrow = 0; nrow < 4; nrow++) {
 		if (getline(&line, &sz, stdin) == -1) {
 			if (ferror(stdin))
-				die(111, "reading row from stdin");
+				err(111, "reading row from stdin");
 			exit(0);
 		}
 		epoch = plot_row(out, line, max, nrow, ncol);
@@ -179,21 +176,21 @@ read_labels(char **labv)
 	line = NULL, sz = 0;
 	if (getline(&line, &sz, stdin) == -1) {
 		if (ferror(stdin))
-			die(111, "reading labels from stdin");
-		die(100, "missing label line", stderr);
+			err(111, "reading labels from stdin");
+		err(100, "missing label line", stderr);
 	}
 	strchomp(line);
 	cp = line;
 
 	if (strcmp(strsep(&cp, ","), "epoch") != 0)
-		die(100, "first label must be 'epoch'");
+		err(100, "first label must be 'epoch'");
 
 	for (ncol = 0; (tok = strsep(&cp, ",")) != NULL; ncol++, labv++)
 		*labv = tok;
 	*labv = NULL;
 
 	if (ncol < 1)
-		die(100, "no label found");
+		err(100, "no label found");
 	return ncol;
 }
 
@@ -223,7 +220,7 @@ main(int argc, char **argv)
 	char *labv[4069 / 2], labels[4069];
 	int c;
 
-	optind = 0;
+	arg0 = *argv;
 	while ((c = getopt(argc, argv, "w:")) > -1) {
 		switch (c) {
 		case 'w':
@@ -243,14 +240,14 @@ main(int argc, char **argv)
 	for (m = max; argc > 0; argc--, argv++, m++) {
 		*m = strtod(*argv, NULL);
 		if (errno)
-			error("*** parsing float '%s'", *argv);
+			warn("*** parsing float '%s'", *argv);
 	}
 
 	ncol = read_labels(labv);
 	width = (wflag - sizeof("XXxXXxXX _")) / ncol - sizeof("|");
 	fmt_labels(labels, ncol, labv);
 	if (ncol != nmax)
-		die(100, "not as many labels and arguments");
+		err(100, "not as many labels and arguments");
 	plot(labels, max, ncol);
 
 	return 0;

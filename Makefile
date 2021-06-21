@@ -1,27 +1,31 @@
-include config.mk
+NAME = ploot
+VERSION = v0.1
 
-src = src/csv.c src/drawille.c src/ffplot.c src/font.c src/font13.c \
-	src/font8.c src/log.c src/scale.c src/util.c
-inc = src/csv.h src/drawille.h src/ffplot.h src/font.h src/log.h \
-	src/scale.h src/util.h
-bin = ploot-farbfeld ploot-feed ploot-braille ploot-text
-obj = ${src:.c=.o}
-lib = -lm
+D = -D_POSIX_C_SOURCE=200811L -D_BSD_SOURCE
+CFLAGS = -Wall -Wextra -std=c99 -pedantic $W $D -fPIC
+LFLAGS = -static -lm
+PREFIX = /usr/local
+MANOREFIX = $(PREFIX)/share/man
 
-all: ${bin}
+SRC = csv.c drawille.c ffplot.c font.c font13.c font8.c scale.c util.c
+INC = csv.h drawille.h ffplot.h font.h scale.h util.h
+BIN = ploot-farbfeld ploot-feed ploot-braille ploot-text
+OBJ = ${SRC:.c=.o}
+
+all: ${BIN}
 
 .c.o:
 	${CC} -c ${CFLAGS} -o $@ $<
 
-${obj} ${bin:=.o}: ${inc} Makefile
-${bin}: ${obj} ${bin:=.o}
-	${CC} ${LFLAGS} -o $@ $@.o ${obj} ${lib}
+${OBJ} ${BIN:=.o}: ${INC} Makefile
+${BIN}: ${OBJ} ${BIN:=.o}
+	${CC} ${LFLAGS} -o $@ $@.o ${OBJ}
 
-install: ${bin}
+install: ${BIN}
 	mkdir -p ${PREFIX}/bin ${MANDIR}/man1 ${MANDIR}/man5
-	cp ${bin} ${PREFIX}/bin
+	cp ${BIN} ${PREFIX}/bin
 	cp *.1 ${MANDIR}/man1
 	cp *.5 ${MANDIR}/man5
 
 clean:
-	rm -f *.o */*.o ${bin}
+	rm -f *.o ${BIN}

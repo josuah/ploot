@@ -14,8 +14,7 @@ struct font {
 extern struct font font8;
 extern struct font font13;
 
-/**/
-size_t		font_width		(struct font *, int);
-size_t		font_strlen		(struct font *, char *);
+size_t	font_width(struct font *, int);
+size_t	font_strlen(struct font *, char *);
 
 #endif

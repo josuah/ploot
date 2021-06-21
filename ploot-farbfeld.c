@@ -1,6 +1,6 @@
 #include <arpa/inet.h>
-#include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <math.h>
@@ -10,11 +10,9 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
 #include "csv.h"
 #include "ffplot.h"
 #include "font.h"
-#include "log.h"
 #include "util.h"
 #include "scale.h"
 
@@ -53,7 +51,6 @@ struct colorname {
 	struct ffcolor color;
 };
 
-char const *arg0 = NULL;
 static char *tflag = "";
 static char *uflag = "";
 static struct font *font = &font13;
@@ -70,7 +67,7 @@ static struct colorname colorname[] = {
 };
 
 static int
-farbfeld_t2x(time_t t, time_t tmin, time_t tmax)
+ffplot_t2x(time_t t, time_t tmin, time_t tmax)
 {
 	if (tmin == tmax)
 		return PLOT_W;
@@ -78,7 +75,7 @@ farbfeld_t2x(time_t t, time_t tmin, time_t tmax)
 }
 
 static int
-farbfeld_v2y(double v, double vmin, double vmax)
+ffplot_v2y(double v, double vmin, double vmax)
 {
 	if (vmin == vmax)
 		return PLOT_H;
@@ -86,22 +83,22 @@ farbfeld_v2y(double v, double vmin, double vmax)
 }
 
 static void
-farbfeld_xaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
-	time_t tmin, time_t tmax, time_t tstep)
+ffplot_xaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
+	time_t tmin, time_t tmax, time_t csvep)
 {
 	time_t t;
 	int x;
 	char str[sizeof("MM/DD HH/MM")], *fmt;
 
-	if (tstep < 3600 * 12)
+	if (csvep < 3600 * 12)
 		fmt = "%H:%M:%S";
-	else if (tstep < 3600 * 24)
+	else if (csvep < 3600 * 24)
 		fmt = "%m/%d %H:%M";
 	else
 		fmt = "%X/%m/%d";
 
-	for (t = tmax - tmax % tstep; t >= tmin; t -= tstep) {
-		x = farbfeld_t2x(t, tmin, tmax);
+	for (t = tmax - tmax % csvep; t >= tmin; t -= csvep) {
+		x = ffplot_t2x(t, tmin, tmax);
 
 		ffplot_line(plot, grid,
 			x, XLABEL_H,
@@ -114,7 +111,7 @@ farbfeld_xaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
 }
 
 static void
-farbfeld_yaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
+ffplot_yaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
 	double vmin, double vmax, double vstep)
 {
 	double v;
@@ -122,7 +119,7 @@ farbfeld_yaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
 	char str[8 + 1];
 
 	for (v = vmax - fmod(vmax, vstep); v >= vmin; v -= vstep) {
-		y = farbfeld_v2y(v, vmin, vmax);
+		y = ffplot_v2y(v, vmin, vmax);
 
 		ffplot_line(plot, grid,
 			YLABEL_W, y,
@@ -135,7 +132,7 @@ farbfeld_yaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
 }
 
 static void
-farbfeld_title(struct ffplot *plot,
+ffplot_title(struct ffplot *plot,
 	struct ffcolor *ct, char *title,
 	struct ffcolor *cu, char *unit)
 {
@@ -144,7 +141,7 @@ farbfeld_title(struct ffplot *plot,
 }
 
 static void
-farbfeld_plot(struct ffplot *plot, struct csv *vl, struct ffcolor *color,
+ffplot_plot(struct ffplot *plot, struct csv *vl, struct ffcolor *color,
 	double vmin, double vmax,
 	time_t tmin, time_t tmax)
 {
@@ -154,8 +151,8 @@ farbfeld_plot(struct ffplot *plot, struct csv *vl, struct ffcolor *color,
 
 	first = 1;
 	for (tp = vl->t, vp = vl->v, n = vl->n; n > 0; n--, vp++, tp++) {
-		y = farbfeld_v2y(*vp, vmin, vmax);
-		x = farbfeld_t2x(*tp, tmin, tmax);
+		y = ffplot_v2y(*vp, vmin, vmax);
+		x = ffplot_t2x(*tp, tmin, tmax);
 
 		if (!first)
 			ffplot_line(plot, color, xlast, ylast, x, y);
@@ -167,16 +164,16 @@ farbfeld_plot(struct ffplot *plot, struct csv *vl, struct ffcolor *color,
 }
 
 static void
-farbfeld_values(struct ffplot *plot, struct csv *vl, struct ffcolor **cl, size_t ncol,
+ffplot_values(struct ffplot *plot, struct csv *vl, struct ffcolor **cl, size_t ncol,
 	time_t tmin, time_t tmax,
 	double vmin, double vmax)
 {
 	for (; ncol > 0; ncol--, vl++, cl++)
-		farbfeld_plot(plot, vl, *cl, vmin, vmax, tmin, tmax);
+		ffplot_plot(plot, vl, *cl, vmin, vmax, tmin, tmax);
 }
 
 static void
-farbfeld_legend(struct ffplot *plot, struct ffcolor *fg, struct csv *vl, struct ffcolor **cl, size_t ncol)
+ffplot_legend(struct ffplot *plot, struct ffcolor *fg, struct csv *vl, struct ffcolor **cl, size_t ncol)
 {
 	size_t x, y;
 
@@ -209,13 +206,14 @@ plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 	struct ffcolor label_fg = { 0x8888, 0x8888, 0x8888, 0xffff };
 	struct ffcolor title_fg = { 0xdddd, 0xdddd, 0xdddd, 0xffff };
 	double vmin, vmax, vstep;
-	time_t tmin, tmax, tstep;
+	time_t tmin, tmax, csvep;
 
 	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
-	tstep = scale_tstep(tmin, tmax, 7);
+	csvep = scale_csvep(tmin, tmax, 7);
 	vstep = scale_vstep(vmin, vmax, 7);
 
-	assert(plot.buf = calloc(IMAGE_H * IMAGE_W, sizeof *plot.buf));
+	if ((plot.buf = calloc(IMAGE_H * IMAGE_W, sizeof *plot.buf)) == NULL)
+		err(1, "calloc: %s", strerror(errno));
 
 	plot.y = 0;
 	plot.x = 0;
@@ -227,23 +225,23 @@ plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 
 	plot.x = XLABEL_X;
 	plot.y = XLABEL_Y;
-	farbfeld_xaxis(&plot, &label_fg, &grid_fg, tmin, tmax, tstep);
+	ffplot_xaxis(&plot, &label_fg, &grid_fg, tmin, tmax, csvep);
 
 	plot.x = YLABEL_X;
 	plot.y = YLABEL_Y;
-	farbfeld_yaxis(&plot, &label_fg, &grid_fg, vmin, vmax, vstep);
+	ffplot_yaxis(&plot, &label_fg, &grid_fg, vmin, vmax, vstep);
 
 	plot.x = TITLE_X;
 	plot.y = TITLE_Y;
-	farbfeld_title(&plot, &title_fg, name, &label_fg, units);
+	ffplot_title(&plot, &title_fg, name, &label_fg, units);
 
 	plot.x = PLOT_X;
 	plot.y = PLOT_Y;
-	farbfeld_values(&plot, vl, cl, ncol, tmin, tmax, vmin, vmax);
+	ffplot_values(&plot, vl, cl, ncol, tmin, tmax, vmin, vmax);
 
 	plot.x = LEGEND_X;
 	plot.y = LEGEND_Y;
-	farbfeld_legend(&plot, &label_fg, vl, cl, ncol);
+	ffplot_legend(&plot, &label_fg, vl, cl, ncol);
 
 	ffplot_print(stdout, &plot);
 }
@@ -264,7 +262,7 @@ argv_to_color(struct ffcolor **cl, char **argv)
 {
 	for (; *argv != NULL; cl++, argv++)
 		if ((*cl = name_to_color(*argv)) == NULL)
-			die(1, "unknown color name: %s", *argv);
+			err(1, "unknown color name: %s", *argv);
 }
 
 static void
@@ -286,7 +284,7 @@ main(int argc, char **argv)
 	size_t ncol;
 	int c;
 
-	optind = 0;
+	arg0 = *argv;
 	while ((c = getopt(argc, argv, "t:u:")) > -1) {
 		switch (c) {
 		case 't':
@@ -305,13 +303,14 @@ main(int argc, char **argv)
 	if (argc == 0)
 		usage();
 
-	assert(cl = calloc(argc, sizeof(*cl)));
+	if ((cl = calloc(argc, sizeof *cl)) == NULL)
+		err(1, "calloc: %s", strerror(errno));
 
 	csv_labels(stdin, &vl, &ncol);
 	if (ncol > (size_t)argc)
-		die(1, "too many columns or not enough arguments");
+		err(1, "too many columns or not enough arguments");
 	else if (ncol < (size_t)argc)
-		die(1, "too many arguments or not enough columns");
+		err(1, "too many arguments or not enough columns");
 	csv_values(stdin, vl, ncol);
 	argv_to_color(cl, argv);
 
