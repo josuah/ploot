@@ -7,8 +7,8 @@ LFLAGS = -static -lm
 PREFIX = /usr/local
 MANOREFIX = $(PREFIX)/share/man
 
-SRC = csv.c drawille.c ffplot.c font.c font13.c font8.c scale.c util.c
-INC = csv.h drawille.h ffplot.h font.h scale.h util.h
+SRC = csv.c drawille.c font.c font13.c font8.c scale.c util.c
+INC = csv.h drawille.h font.h scale.h util.h
 BIN = ploot-farbfeld ploot-feed ploot-braille ploot-text
 OBJ = ${SRC:.c=.o}
 
