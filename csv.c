@@ -96,8 +96,8 @@ csv_labels(FILE *fp, struct csv **vlp, size_t *ncol)
 	while ((field = strsep(&cp, ","))) {
 		if ((vl = realloc(vl, sz += sizeof *vl)) == NULL)
 			err(1, "realloc: %s", strerror(errno));
-		memset(vl, 0, sizeof *vl);
 		col = vl + (*ncol)++;
+		memset(col, 0, sizeof *vl);
 		strlcpy(col->label, field, sizeof col->label);
 	}
 	free(line);
