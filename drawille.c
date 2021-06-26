@@ -165,7 +165,7 @@ drawille_text_glyph(struct drawille *drw, int x, int y, struct font *font, int c
 	int w;
 	char *glyph;
 
-	glyph = font->glyph[(c > 127 || c < 127) ? 0 : c];
+	glyph = font->glyph[(c > 127 || c < 0) ? 0 : c];
 	w = strlen(glyph) / font->height;
 	for (int ix = 0; ix < w; ix++)
 		for (int iy = 0; iy < font->height; iy++)
