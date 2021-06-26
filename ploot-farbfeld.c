@@ -236,20 +236,20 @@ ffplot_v2y(double v, double vmin, double vmax)
 
 static void
 ffplot_xaxis(struct ffplot *plot, struct ffcolor *label, struct ffcolor *grid,
-	time_t tmin, time_t tmax, time_t csvep)
+	time_t tmin, time_t tmax, time_t tstep)
 {
 	time_t t;
 	int x;
 	char str[sizeof("MM/DD HH/MM")], *fmt;
 
-	if (csvep < 3600 * 12)
+	if (tstep < 3600 * 12)
 		fmt = "%H:%M:%S";
-	else if (csvep < 3600 * 24)
+	else if (tstep < 3600 * 24)
 		fmt = "%m/%d %H:%M";
 	else
 		fmt = "%X/%m/%d";
 
-	for (t = tmax - tmax % csvep; t >= tmin; t -= csvep) {
+	for (t = tmax - tmax % tstep; t >= tmin; t -= tstep) {
 		x = ffplot_t2x(t, tmin, tmax);
 
 		ffplot_line(plot, grid,
@@ -358,10 +358,10 @@ plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 	struct ffcolor label_fg = { 0x8888, 0x8888, 0x8888, 0xffff };
 	struct ffcolor title_fg = { 0xdddd, 0xdddd, 0xdddd, 0xffff };
 	double vmin, vmax, vstep;
-	time_t tmin, tmax, csvep;
+	time_t tmin, tmax, tstep;
 
 	scale_minmax(vl, ncol, &tmin, &tmax, &vmin, &vmax);
-	csvep = scale_csvep(tmin, tmax, 7);
+	tstep = scale_tstep(tmin, tmax, 7);
 	vstep = scale_vstep(vmin, vmax, 7);
 
 	if ((plot.buf = calloc(IMAGE_H * IMAGE_W, sizeof *plot.buf)) == NULL)
@@ -377,7 +377,7 @@ plot(struct csv *vl, struct ffcolor **cl, size_t ncol, char *name, char *units)
 
 	plot.x = XLABEL_X;
 	plot.y = XLABEL_Y;
-	ffplot_xaxis(&plot, &label_fg, &grid_fg, tmin, tmax, csvep);
+	ffplot_xaxis(&plot, &label_fg, &grid_fg, tmin, tmax, tstep);
 
 	plot.x = YLABEL_X;
 	plot.y = YLABEL_Y;
