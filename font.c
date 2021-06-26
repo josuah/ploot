@@ -1,11 +1,13 @@
 #include "font.h"
-
 #include <string.h>
 
 size_t
 font_width(struct font *ft, int c)
 {
-	return strlen(ft->glyph[c]) / ft->height;
+	size_t len;
+
+	len = strlen(ft->glyph[(c < 0 || c > 127) ? 0 : c]) / ft->height;
+	return len;
 }
 
 size_t

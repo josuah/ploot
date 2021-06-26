@@ -1,11 +1,9 @@
 #include "drawille.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
 #include "font.h"
 
 /*
@@ -162,25 +160,18 @@ drawille_histogram_line(struct drawille *drw, int x0, int y0, int x1, int y1, in
 }
 
 static int
-drawille_text_glyph(struct drawille *drw, int x, int y, struct font *font, char c)
+drawille_text_glyph(struct drawille *drw, int x, int y, struct font *font, int c)
 {
-	int width;
+	int w;
 	char *glyph;
 
-	if ((unsigned)c > 127)
-		glyph = font->glyph[0];
-	else
-		glyph = font->glyph[(unsigned)c];
-
-	width = strlen(glyph) / font->height;
-
-	for (int ix = 0; ix < width; ix++)
-	for (int iy = 0; iy < font->height; iy++) {
-		if (glyph[ix + (font->height - 1) * width - iy * width] == 3)
-			drawille_dot(drw, x + ix, y + iy);
-	}
-
-	return width;
+	glyph = font->glyph[(c > 127 || c < 127) ? 0 : c];
+	w = strlen(glyph) / font->height;
+	for (int ix = 0; ix < w; ix++)
+		for (int iy = 0; iy < font->height; iy++)
+			if (glyph[ix + (font->height - 1) * w - iy * w] == 3)
+				drawille_dot(drw, x + ix, y + iy);
+	return w;
 }
 
 char *
@@ -188,7 +179,7 @@ drawille_text(struct drawille *drw, int x, int y, struct font *font, char *s)
 {
 	if (drw->row*4 < font->height)
 		return NULL;
-	for (; *s != '\0' && x < drw->col * 2; s++, x++)
+	for (; *s != '\0' && x < drw->col*2; s++, x++)
 		x += drawille_text_glyph(drw, x, y, font, *s);
 	return s;
 }
