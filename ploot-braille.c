@@ -68,12 +68,13 @@ adjust_scale(double *min, double *max, int rows)
 
 	dv = *max - *min;
 
+	step = 1;
 	if (dv > 1) {
 		for (double mant = 1;; mant *= 10) {
 			double *sc = scale;
 			for (; sc < scale + LEN(scale); sc++) {
 				step = mant * *sc;
-				if (dv < (rows - 2) * step)
+				if (dv < rows * step)
 					goto end;
 			}
 		}
@@ -81,9 +82,10 @@ adjust_scale(double *min, double *max, int rows)
 		for (double mant = 1;; mant /= 10) {
 			double *sc = scale + LEN(scale) - 1;
 			for (; sc >= scale; sc--) {
-				step = mant * *sc;
-				if (dv > (rows - 2) * step)
+				double tmp = mant * *sc;
+				if (dv > rows * tmp)
 					goto end;
+				step = tmp;
 			}
 		}
 	}
