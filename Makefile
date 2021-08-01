@@ -11,7 +11,7 @@ SRC = csv.c drawille.c font.c font13.c font8.c util.c
 HDR = csv.h drawille.h font.h util.h
 BIN = ploot-feed ploot-braille ploot-text # ploot-farbfeld
 OBJ = ${SRC:.c=.o}
-MAN1 = ics2tsv.1 tsv2agenda.1 tsv2ics.1
+MAN1 = ploot-feed ploot-farbfeld.1
 
 all: ${BIN}
 
