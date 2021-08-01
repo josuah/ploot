@@ -11,7 +11,7 @@ SRC = csv.c drawille.c font.c font13.c font8.c util.c
 HDR = csv.h drawille.h font.h util.h
 BIN = ploot-feed ploot-braille ploot-text # ploot-farbfeld
 OBJ = ${SRC:.c=.o}
-MAN1 = ploot-feed ploot-farbfeld.1
+MAN1 = ploot-feed.1 ploot-farbfeld.1
 
 all: ${BIN}
 
@@ -39,7 +39,7 @@ dist:
 site:
 	notmarkdown README.md | notmarkdown-html | cat .head.html - >index.html
 	notmarkdown README.md | notmarkdown-gph | cat .head.gph - >index.gph
-	sed -i 's/VERSION/${VERSION}/g' index.*
 	mkdir -p man
 	mandoc -Thtml -Ofragment ${MAN1} | cat .head.html - >man/index.html
 	mandoc -Tutf8 ${MAN1} | ul -t dumb >man/index.gph
+	sed -i "s/NAME/${NAME}/g; s/VERSION/${VERSION}/g" index.* man/index.*

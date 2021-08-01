@@ -44,22 +44,20 @@ Show graph in the form of braille characters:
 
 ploot-farbfeld
 --------------
-*ploot-farbfeld* reads collectd-style comma separated values (CSV) and produces a plot
-in the farbfeld [1] image format (pipe it to ff2png). It is an alternative to
-RRDtool [2].
+*ploot-farbfeld* reads collectd-style comma separated values (CSV)
+and produces a plot in the [farbfeld](https://tools.suckless.org/farbfeld/)
+image format (pipe it to ff2png). It is an alternative to
+[RRDtool](https://oss.oetiker.ch/rrdtool/).
 
 It is targetting at generating monitoring graph, and it always read unix
 timestamp as first column on standard input.  The first line determines the
 name of the curves.
 
-[1]: https://tools.suckless.org/farbfeld/
-[2]: https://oss.oetiker.ch/rrdtool/
-
 ploot-feed
 ----------
 *ploot-feed* also reads collectd-style comma separated values (CSV) but produces
 a plain text continuous waterfall chart for live monitoring in the terminal. it
-is an alternative to grafana [1].
+is an alternative to [grafana](https://grafana.com/).
 
 ```
 % plootxt 1 1 1 <load-average.csv
@@ -94,5 +92,3 @@ is an alternative to grafana [1].
 22:51:38 _│⣿⣿⣿⣟⣛⡋⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│⣿⣿⣿⣟⣛⠛⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│⣿⣿⣿⣿⡟⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
 18/05/02  │⣿⡿⠍⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│⣿⡿⠟⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│⣿⣿⠟⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
 ```
-
-[1]: https://grafana.com/
