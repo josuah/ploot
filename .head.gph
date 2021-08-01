@@ -1,0 +1,3 @@
+[9|release vVERSION|/ploot/ploot-VERSION.tgz|server|port]
+[h|git clone git://git.z0.is/ploot/|URL:git://git.z0.is/ploot/||]
+[h|web version|URL:http://z0.is/ploot/||]
