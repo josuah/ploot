@@ -2,7 +2,7 @@ ploot
 =====
 `git:/bitreich.org/ploot` - [1.0](gopher://bitreich.org/9/releases/ploot/ploot-v1.0.tar.gz)
 
-Plain text plotting tools.  See also the [man pages](/ploot/man/).
+Plain text plotting tools.  See also the [man pages](/tool/ploot/man/).
 
 ploot-text
 ----------
